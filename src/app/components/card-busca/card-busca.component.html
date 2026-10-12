@@ -1,0 +1,34 @@
+<div class="card-content">
+  <div class="upper-card">
+    <button class="chevron" (click)="mais()" [attr.aria-expanded]="!isCollapsed" aria-controls="collapseBasic">
+      <i-bs name="chevron-down" *ngIf="isCollapsed"></i-bs>
+      <i-bs name="chevron-up" *ngIf="!isCollapsed"></i-bs>
+    </button>
+    <p>Nome do aluno diplomado:</p>
+    <label class="info">{{ maisInfo.nomeAluno }}</label>
+    <p>CPF</p>
+    <label class="info">{{ maisInfo.cpfAluno }}</label>
+  </div>
+  <div id="collapseBasic" [collapse]="isCollapsed" [isAnimated]="true">
+    <div class="mais-info-body">
+      <p>Curso de graduação:</p>
+      <label>{{ maisInfo.nomeCursoEMEC }}</label>
+      <p>IES Expedidora:</p>
+      <label>{{ maisInfo.nomeInstituicaoExpedidoraEMEC }}</label>
+      <p>IES Registradora:</p>
+      <label>{{ maisInfo.nomeInstituicaoRegistraEMEC }}</label>
+      <p>Data de Ingresso no curso:</p>
+      <label>{{ maisInfo.dataIngressoCurso }}</label>
+      <p>Data de conclusão do curso:</p>
+      <label>{{ maisInfo.dataConclusaoCurso }}</label>
+      <p>Data de expedição do diploma:</p>
+      <label>{{ maisInfo.dataExpedicaoDiploma }}</label>
+      <p>Data de registro do diploma:</p>
+      <label>{{ maisInfo.dataRegistroDiploma }}</label>
+      <p>Número de Registro do diploma:</p>
+      <label>{{ maisInfo.numRegistroDiplomaSIA }}</label>
+      <p>Data de publicação no Diário Oficial da União - D.O.U:</p>
+      <label>{{ maisInfo.dataRegistroDOU }}</label>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,248 @@
+<div class="header-container">
+  <header class="br-header" data-no-search="">
+    <div class="container-lg">
+      <div class="flex-container">
+        <div class="logo">
+          <img alt="logo" src="assets/govbr/govbr-colorido-b.png" />
+          <div class="sign">Ministério da Educação</div>
+        </div>
+        <div class="actions">
+          <div class="links">
+            <ul>
+              <li class="title">Acesso Rápido</li>
+              <li><a target="_blank" rel="noreferrer" href="https://www.gov.br/pt-br/orgaos-do-governo">Órgãos do Governo</a></li>
+              <li><a target="_blank" rel="noreferrer" href="http://www.acessoainformacao.gov.br/">Acesso à Informação</a></li>
+              <li><a target="_blank" rel="noreferrer" href="http://www4.planalto.gov.br/legislacao">Legislação</a></li>
+              <li><a target="_blank" rel="noreferrer" href="https://www.gov.br/accessibility-info">Acessibilidade</a></li>
+            </ul>
+            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Acesso Rápido">
+              <svg class="svg-inline--fa fa-ellipsis-v fa-w-6" aria-hidden="true" focusable="false" role="img" viewBox="0 0 192 512">
+                <path fill="currentColor" d="M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z" />
+              </svg>
+            </button>
+          </div>
+          <div class="functions">
+            <ul>
+              <li class="title">Funcionalidades do Sistema</li>
+              <li>
+                <a *ngFor="let f of funcionalidades" [href]="f.url">
+                  <button class="br-button circle small" type="button" [attr.aria-label]="f.titulo">
+                    <svg class="svg-inline--fa fa-adjust fa-w-16" aria-hidden="true" focusable="false" role="img" viewBox="0 0 512 512">
+                      <path fill="currentColor" d="M8 256c0 136.966 111.033 248 248 248s248-111.034 248-248S392.966 8 256 8 8 119.033 8 256zm248 184V72c101.705 0 184 82.311 184 184 0 101.705-82.311 184-184 184z" />
+                    </svg>
+                    <span class="text">{{ f.titulo }}</span>
+                  </button>
+                </a>
+              </li>
+            </ul>
+            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Funcionalidades do Sistema">
+              <svg class="svg-inline--fa fa-th fa-w-16" aria-hidden="true" focusable="false" role="img" viewBox="0 0 512 512">
+                <path fill="currentColor" d="M149.333 56v80c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V56c0-13.255 10.745-24 24-24h101.333c13.255 0 24 10.745 24 24zm181.334 240v-80c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.256 0 24.001-10.745 24.001-24zm32-240v80c0 13.255 10.745 24 24 24H488c13.255 0 24-10.745 24-24V56c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24zm-32 80V56c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.256 0 24.001-10.745 24.001-24zm-205.334 56H24c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24zM0 376v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H24c-13.255 0-24 10.745-24 24zm386.667-56H488c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24zm0 160H488c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24zM181.333 376v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24z" />
+              </svg>
+            </button>
+          </div>
+          <div class="search-btn">
+            <button class="br-button circle small" type="button" aria-label="Abrir Busca">
+              <svg class="svg-inline--fa fa-search fa-w-16" aria-hidden="true" focusable="false" role="img" viewBox="0 0 512 512">
+                <path fill="currentColor" [attr.d]="iconeBusca" />
+              </svg>
+            </button>
+          </div>
+          <div class="login-changed">
+            <a href="https://sso.acesso.gov.br/login" target="_blank" rel="noreferrer">
+              <button class="br-button small" type="button" aria-label="Entrar">
+                <svg class="svg-inline--fa fa-user fa-w-14" aria-hidden="true" focusable="false" role="img" viewBox="0 0 448 512">
+                  <path fill="currentColor" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z" />
+                </svg>
+                <span class="ml-1">Entrar</span>
+              </button>
+            </a>
+          </div>
+        </div>
+        <div class="search">
+          <div class="br-input has-icon">
+            <label></label>
+            <input class="has-icon" placeholder="O que você procura?" aria-label="Texto da pesquisa" type="text" />
+            <button class="icon" type="button" aria-label="Pesquisar">
+              <span class="icon">
+                <svg class="svg-inline--fa fa-search fa-w-16" aria-hidden="true" focusable="false" role="img" viewBox="0 0 512 512">
+                  <path fill="currentColor" [attr.d]="iconeBusca" />
+                </svg>
+              </span>
+            </button>
+          </div>
+          <button class="br-button circle small search-close" type="button" aria-label="Fechar Busca">
+            <svg class="svg-inline--fa fa-times fa-w-11" aria-hidden="true" focusable="false" role="img" viewBox="0 0 352 512">
+              <path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<div class="hero">
+  <div class="hero-nav container-lg">
+    <a href="https://verificadordiplomadigital.mec.gov.br/">
+      <h1>Verificação de conformidade da Estrutura XML do Diploma Digital</h1>
+    </a>
+  </div>
+  <p class="helper-text"></p>
+</div>
+
+<div id="content" class="content-card">
+  <div class="title-container">
+    <div></div>
+    <div>
+      <p class="page-title">Verificar a estrutura XML do Diploma</p>
+      <div class="page-subtitle">
+        <div>
+          <p>Essa ferramenta permite verificar se a estrutura do arquivo XML do diploma digital está em conformidade com o padrão estabelecido pelo MEC por meio da IN SESU nº1/2020 e suas alterações.</p>
+          <p>O conteúdo do arquivo não é validado, para isso é necessário acessar o link do diploma digital disponibilizado pelas IES e acessível pelo Cadastro e-MEC na aba ACERVO ACADÊMICO.</p>
+        </div>
+      </div>
+    </div>
+    <div class="action"></div>
+  </div>
+
+  <div class="upload-helper">
+    <div class="image">
+      <svg width="105" height="77" viewBox="0 0 105 77" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.66212" y="1.66212" width="101.676" height="73.6758" rx="3.32425" fill="white" stroke="#111d7d" stroke-width="3.32425" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M25.9735 1.66187C25.9735 0.744045 26.7176 0 27.6354 0H30.3906C31.3084 0 32.0525 0.744045 32.0525 1.66187C32.0525 2.5797 31.3084 3.32374 30.3906 3.32374H27.6354C26.7176 3.32374 25.9735 2.5797 25.9735 1.66187Z" fill="#111d7d" />
+        <path d="M35.3684 1.66187C35.3684 0.744045 36.1125 0 37.0303 0H39.7855C40.7033 0 41.4474 0.744045 41.4474 1.66187C41.4474 2.5797 40.7033 3.32374 39.7855 3.32374H37.0303C36.1125 3.32374 35.3684 2.5797 35.3684 1.66187Z" fill="#111d7d" />
+        <rect x="30.3945" width="9.39474" height="3.32374" fill="#FEFEFE" />
+        <path d="M25.9735 1.66187C25.9735 0.744045 26.7176 0 27.6354 0H30.3906C31.3084 0 32.0525 0.744045 32.0525 1.66187C32.0525 2.5797 31.3084 3.32374 30.3906 3.32374H27.6354C26.7176 3.32374 25.9735 2.5797 25.9735 1.66187Z" fill="#111d7d" />
+        <path d="M35.3684 1.66187C35.3684 0.744045 36.1125 0 37.0303 0H39.7855C40.7033 0 41.4474 0.744045 41.4474 1.66187C41.4474 2.5797 40.7033 3.32374 39.7855 3.32374H37.0303C36.1125 3.32374 35.3684 2.5797 35.3684 1.66187Z" fill="#111d7d" />
+        <mask id="path-7-inside-1" fill="white">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M8.56581 13.8489C11.7705 13.8489 14.3684 11.2447 14.3684 8.03235C14.3684 7.9395 14.3663 7.84716 14.362 7.75537H90.2451C90.1369 8.19921 90.0796 8.66302 90.0796 9.14025C90.0796 12.3526 92.6775 14.9568 95.8822 14.9568C96.358 14.9568 96.8205 14.8994 97.263 14.7911V62.2089C96.8205 62.1006 96.358 62.0432 95.8822 62.0432C92.6775 62.0432 90.0796 64.6474 90.0796 67.8597C90.0796 68.337 90.1369 68.8008 90.2451 69.2446H14.203C14.3111 68.8008 14.3684 68.337 14.3684 67.8597C14.3684 64.6474 11.7705 62.0432 8.56581 62.0432C8.47312 62.0432 8.38094 62.0454 8.28931 62.0497V13.8424C8.38094 13.8467 8.47312 13.8489 8.56581 13.8489Z" />
+        </mask>
+        <path d="M14.362 7.75537V4.98516C13.6048 4.98516 12.8807 5.29508 12.3579 5.84284C11.8352 6.3906 11.5594 7.12845 11.5948 7.88478L14.362 7.75537ZM90.2451 7.75537L92.9365 8.41118C93.1378 7.5852 92.9486 6.71256 92.4235 6.04404C91.8983 5.37552 91.0952 4.98516 90.2451 4.98516V7.75537ZM97.263 14.7911H100.033C100.033 13.9405 99.6424 13.1371 98.9733 12.6119C98.3041 12.0867 97.4308 11.8981 96.6046 12.1003L97.263 14.7911ZM97.263 62.2089L96.6046 64.8997C97.4308 65.1019 98.3042 64.9132 98.9733 64.3881C99.6424 63.8629 100.033 63.0595 100.033 62.2089H97.263ZM90.2451 69.2446V72.0148C91.0952 72.0148 91.8983 71.6244 92.4234 70.9559C92.9486 70.2874 93.1378 69.4148 92.9365 68.5888L90.2451 69.2446ZM14.203 69.2446L11.5115 68.5888C11.3103 69.4148 11.4994 70.2874 12.0246 70.9559C12.5498 71.6244 13.3528 72.0148 14.203 72.0148V69.2446ZM8.28931 62.0497H5.5191C5.5191 62.807 5.82913 63.5313 6.37705 64.054C6.92498 64.5768 7.66303 64.8524 8.41948 64.8168L8.28931 62.0497ZM8.28931 13.8424L8.41944 11.0753C7.66299 11.0397 6.92495 11.3153 6.37704 11.8381C5.82912 12.3608 5.5191 13.0851 5.5191 13.8424H8.28931ZM11.5982 8.03235C11.5982 9.72105 10.2343 11.0787 8.56581 11.0787V16.6191C13.3067 16.6191 17.1387 12.7684 17.1387 8.03235H11.5982ZM11.5948 7.88478C11.5971 7.93348 11.5982 7.98268 11.5982 8.03235H17.1387C17.1387 7.89632 17.1355 7.76083 17.1292 7.62596L11.5948 7.88478ZM90.2451 4.98516H14.362V10.5256H90.2451V4.98516ZM92.8498 9.14025C92.8498 8.88563 92.8803 8.64195 92.9365 8.41118L87.5536 7.09956C87.3935 7.75647 87.3094 8.4404 87.3094 9.14025H92.8498ZM95.8822 12.1866C94.2137 12.1866 92.8498 10.829 92.8498 9.14025H87.3094C87.3094 13.8763 91.1413 17.727 95.8822 17.727V12.1866ZM96.6046 12.1003C96.3759 12.1562 96.1344 12.1866 95.8822 12.1866V17.727C96.5816 17.727 97.265 17.6425 97.9214 17.4819L96.6046 12.1003ZM100.033 62.2089V14.7911H94.4928V62.2089H100.033ZM95.8822 64.8134C96.1344 64.8134 96.3759 64.8437 96.6046 64.8997L97.9214 59.518C97.265 59.3575 96.5816 59.273 95.8822 59.273V64.8134ZM92.8498 67.8597C92.8498 66.171 94.2137 64.8134 95.8822 64.8134V59.273C91.1413 59.273 87.3094 63.1237 87.3094 67.8597H92.8498ZM92.9365 68.5888C92.8803 68.358 92.8498 68.1144 92.8498 67.8597H87.3094C87.3094 68.5596 87.3935 69.2435 87.5536 69.9004L92.9365 68.5888ZM14.203 72.0148H90.2451V66.4744H14.203V72.0148ZM11.5982 67.8597C11.5982 68.1143 11.5677 68.358 11.5115 68.5888L16.8944 69.9004C17.0545 69.2435 17.1387 68.5596 17.1387 67.8597H11.5982ZM8.56581 64.8134C10.2343 64.8134 11.5982 66.171 11.5982 67.8597H17.1387C17.1387 63.1237 13.3067 59.273 8.56581 59.273V64.8134ZM8.41948 64.8168C8.46775 64.8146 8.51653 64.8134 8.56581 64.8134V59.273C8.42972 59.273 8.29413 59.2762 8.15913 59.2825L8.41948 64.8168ZM5.5191 13.8424V62.0497H11.0595V13.8424H5.5191ZM8.56581 11.0787C8.51654 11.0787 8.46774 11.0775 8.41944 11.0753L8.15917 16.6096C8.29413 16.6159 8.42971 16.6191 8.56581 16.6191V11.0787Z" fill="#111d7d" mask="url(#path-7-inside-1)" />
+        <path d="M65.7206 21.8883C66.5674 21.8883 67.2536 21.2173 67.2536 20.3894C67.2536 19.5615 66.5674 18.8905 65.7206 18.8905H39.8557C39.0089 18.8905 38.3226 19.5615 38.3226 20.3894C38.3226 21.2173 39.0089 21.8883 39.8557 21.8883H65.7206Z" fill="#111d7d" />
+        <path d="M18.7898 30.4885C18.7898 31.3164 19.476 31.9874 20.3228 31.9874H85.2529C86.0997 31.9874 86.786 31.3164 86.786 30.4885C86.786 29.6606 86.0997 28.9896 85.2529 28.9896H20.3228C19.476 28.9896 18.7898 29.6606 18.7898 30.4885Z" fill="#1351B410" />
+        <path d="M20.3228 42.0863H85.2529C86.0997 42.0863 86.786 41.4153 86.786 40.5874C86.786 39.7595 86.0997 39.0885 85.2529 39.0885H20.3228C19.476 39.0885 18.7898 39.7595 18.7898 40.5874C18.7898 41.4153 19.476 42.0863 20.3228 42.0863Z" fill="#1351B410" />
+        <path d="M20.3228 52.1854H50.0145C50.8613 52.1854 51.5476 51.5144 51.5476 50.6865C51.5476 49.8586 50.8613 49.1876 50.0145 49.1876H20.3228C19.476 49.1876 18.7898 49.8586 18.7898 50.6865C18.7898 51.5144 19.476 52.1854 20.3228 52.1854Z" fill="#1351B410" />
+        <rect x="50.2894" y="66.4749" width="6.03947" height="2.76978" fill="#FEFEFE" />
+        <path d="M47.5264 67.8597C47.5264 67.0949 48.1464 66.4749 48.9113 66.4749H50.0494C50.8142 66.4749 51.4343 67.0949 51.4343 67.8597C51.4343 68.6246 50.8142 69.2446 50.0494 69.2446H48.9113C48.1464 69.2446 47.5264 68.6246 47.5264 67.8597Z" fill="#111d7d" />
+        <path d="M54.7108 67.8597C54.7108 67.0949 55.3309 66.4749 56.0957 66.4749H57.2338C57.9987 66.4749 58.6187 67.0949 58.6187 67.8597C58.6187 68.6246 57.9987 69.2446 57.2338 69.2446H56.0957C55.3309 69.2446 54.7108 68.6246 54.7108 67.8597Z" fill="#111d7d" />
+      </svg>
+    </div>
+    <div class="text">
+      <p class="title">Faça upload do arquivo .xml e depois clique em verificar.</p>
+    </div>
+  </div>
+
+  <div class="upload">
+    <input #inputArquivo id="select-file" type="file" accept=".xml,text/xml,application/xml" (change)="selecionarArquivo($event)" />
+    <p *ngIf="nomeArquivo" class="arquivo">
+      {{ nomeArquivo }} ({{ tamanhoArquivo }})
+      <button type="button" class="remover" aria-label="Remover arquivo" (click)="limpar()">
+        <i-bs name="trash"></i-bs>
+      </button>
+    </p>
+    <div class="buttons">
+      <button class="botao" (click)="inputArquivo.click()">
+        <div class="content">
+          <div class="text-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="21" height="20" fill="none">
+              <g fill="#fff" clip-path="url(#upload_svg__a)">
+                <path d="M16.973 7.352c-.933-3.683-4.705-5.918-8.425-4.994-2.907.722-5.017 3.21-5.235 6.169-2.064.336-3.46 2.266-3.12 4.31.302 1.816 1.892 3.146 3.751 3.139h3.157v-1.25H3.944c-1.394 0-2.525-1.12-2.525-2.5s1.13-2.5 2.525-2.5c.35 0 .632-.28.632-.625-.003-3.106 2.538-5.626 5.675-5.63 2.716-.002 5.054 1.899 5.58 4.537a.63.63 0 0 0 .536.5c1.726.243 2.926 1.825 2.68 3.534a3.146 3.146 0 0 1-3.109 2.684h-2.525v1.25h2.525c2.44-.008 4.413-1.972 4.405-4.388-.006-2.011-1.396-3.759-3.37-4.236" />
+                <path d="m9.809 9.908-2.525 2.5.89.88 1.452-1.43v5.993h1.262v-5.993l1.446 1.43.89-.88-2.525-2.5a.636.636 0 0 0-.89 0" />
+              </g>
+              <defs>
+                <clipPath id="upload_svg__a">
+                  <path fill="#fff" d="M.141 0h20.202v20H.141z" />
+                </clipPath>
+              </defs>
+            </svg>
+            <span>Escolher arquivo</span>
+          </div>
+        </div>
+      </button>
+    </div>
+    <button class="botao primary" [disabled]="!conteudo" (click)="verificar()">
+      <div class="content">
+        <div class="text-container">
+          <span>Verificar</span>
+        </div>
+      </div>
+    </button>
+    <p class="version-support">Versões suportadas: schemas XSD 1.05 e demais anteriores.</p>
+  </div>
+
+  <div class="resultado" *ngIf="verificacoes.length">
+    <div class="resultado-header">
+      <span>Resultado da verificação</span>
+      <span class="tag" [ngClass]="conforme ? 'sucesso' : 'erro'">{{ conforme ? 'Conforme' : 'Não conforme' }}</span>
+    </div>
+    <div class="item" *ngFor="let v of verificacoes" [ngClass]="v.status">
+      <span class="status-icon">
+        <i-bs *ngIf="v.status === 'sucesso'" name="check-circle-fill"></i-bs>
+        <i-bs *ngIf="v.status === 'erro'" name="x-circle-fill"></i-bs>
+        <i-bs *ngIf="v.status === 'alerta'" name="exclamation-triangle-fill"></i-bs>
+      </span>
+      <div>
+        <p class="item-titulo">{{ v.titulo }}</p>
+        <p class="item-descricao">{{ v.descricao }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="copyright-container"></div>
+
+<div class="footer-container">
+  <footer class="br-footer inverted">
+    <div class="container-lg">
+      <div inverted="" class="logo text-center">
+        <img alt="Imagem" src="assets/govbr/govbr-colorido-b.png" />
+      </div>
+      <div class="br-list" collapsible="" horizontal="" unique="">
+        <div class="col-2" *ngFor="let grupo of rodape">
+          <div class="item" link="">
+            <a [href]="grupo.url">
+              <div class="content text-down-01 text-bold text-uppercase">{{ grupo.titulo }}</div>
+            </a>
+            <div class="support">
+              <svg class="svg-inline--fa fa-angle-up fa-w-10" aria-hidden="true" focusable="false" role="img" viewBox="0 0 320 512">
+                <path fill="currentColor" d="M177 159.7l136 136c9.4 9.4 9.4 24.6 0 33.9l-22.6 22.6c-9.4 9.4-24.6 9.4-33.9 0L160 255.9l-96.4 96.4c-9.4 9.4-24.6 9.4-33.9 0L7 329.7c-9.4-9.4-9.4-24.6 0-33.9l136-136c9.4-9.5 24.6-9.5 34-.1z" />
+              </svg>
+            </div>
+          </div>
+          <div class="br-list">
+            <a class="item" *ngFor="let link of grupo.links" [href]="link.url" link="">
+              <div class="content">{{ link.titulo }}</div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="d-none d-sm-block">
+        <div class="row align-items-end justify-content-between py-5">
+          <div class="col social-network">
+            <p class="text-up-01 text-extra-bold text-uppercase">Redes Sociais</p>
+            <ul class="portal-redes">
+              <li *ngFor="let rede of redesSociais" class="portalredes-item" [ngClass]="'portalredes-' + rede.classe">
+                <a target="_blank" rel="noreferrer" [href]="rede.url">{{ rede.titulo }}</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col assigns text-right">
+            <div class="prefooter">
+              <img alt="Ministério da Educação. Pátria Amada Brasil" loading="lazy" width="301" height="77" decoding="async" src="assets/govbr/education.png" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="br-divider"></div>
+    <div class="container-lg">
+      <div class="info">
+        <div class="text-down-01 text-medium pb-3 text-center">
+          Todo o conteúdo deste site está publicado sob a licença
+          <strong><a target="_blank" rel="noreferrer" href="https://creativecommons.org/licenses/by-nd/3.0/deed.pt_BR">Creative Commons Atribuição-SemDerivações 3.0 Não Adaptada.</a></strong>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

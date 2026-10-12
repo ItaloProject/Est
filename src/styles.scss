@@ -1,0 +1,42 @@
+/* Bootstrap 5.3 e ngx-spinner (ball-scale-multiple) são carregados via angular.json */
+
+body {
+  font-family: Roboto, sans-serif;
+  color: #444;
+  background-color: #f9f9f9;
+}
+
+/* Temas por IES (aplicados na navbar via [ngClass]="ies.path") */
+.estacio {
+  background-color: #c3e0ed;
+}
+
+.estacioSubHeader {
+  background-color: #d7e9f1;
+}
+
+.ibmec {
+  background-color: #414141;
+}
+
+.damasio {
+  background-color: #222325;
+}
+
+.area1,
+.faci,
+.facimp,
+.fmf,
+.unifacid,
+.unifanor,
+.unifavip,
+.unifbv,
+.unimetrocamp,
+.uniruy,
+.unitoledo {
+  background-color: #88005b;
+}
+
+.newton {
+  background-color: #efefef;
+}

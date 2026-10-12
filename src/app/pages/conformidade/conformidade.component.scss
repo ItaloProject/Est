@@ -1,0 +1,367 @@
+$primary: #1351b4;
+$contrast: #111d7d;
+$background: #f4f7f9;
+$success: #48b870;
+$error: #ec5c52;
+$undetermined: #ff9800;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: $background;
+  color: #000000;
+  font: 400 16px Rawline, sans-serif;
+}
+
+:host(:not(.ds-pronto)) {
+  visibility: hidden;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.header-container {
+  .flex-container {
+    align-items: center;
+  }
+
+  .br-header .actions .login-changed {
+    order: 4;
+
+    .br-button {
+      width: auto;
+      padding: 0 var(--spacing-scale-base);
+      white-space: nowrap;
+      background: var(--color-secondary-02);
+      margin-left: var(--spacing-scale-base);
+    }
+  }
+
+  @media only screen and (min-width: 576px) {
+    .actions .functions {
+      display: none;
+    }
+  }
+}
+
+.hero {
+  width: 100vw;
+  height: 400px;
+  padding-top: 30px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-direction: column;
+  background-color: $primary;
+  background-image: url('/assets/govbr/digital.png');
+  background-size: 70%;
+  background-repeat: no-repeat;
+  background-position: -25% 45%;
+
+  @media only screen and (max-width: 769px) {
+    height: 428px;
+  }
+}
+
+.hero-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #95b9d0;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+
+  h1 {
+    color: #fff;
+    cursor: pointer;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.helper-text {
+  font-style: normal;
+  font-size: 1.1em;
+  line-height: 24px;
+  font-weight: 400;
+  text-align: center;
+  color: #ffffff;
+}
+
+.content-card {
+  width: 800px;
+  padding: 20px 20px 40px 20px;
+  min-height: 300px;
+  max-width: 95%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 10px 10px 50px 3px rgba(1, 69, 0, 0.22);
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: -230px;
+  margin-bottom: 6em;
+
+  @media only screen and (max-width: 576px) {
+    margin-top: -200px;
+    margin-bottom: 1em;
+  }
+}
+
+.title-container {
+  display: grid;
+  align-items: center;
+  width: 100%;
+  grid-template-columns: 1fr;
+  padding: 0;
+  margin: 0 0 18px 0;
+
+  .action {
+    justify-self: right;
+  }
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin: 7px 0;
+
+  @media only screen and (max-width: 576px) {
+    font-size: 1.4em;
+    line-height: 34px;
+    margin-bottom: 14px;
+  }
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #494949;
+  font-weight: 600;
+  text-align: left;
+  margin: 12px 0;
+
+  p {
+    margin-bottom: 18px;
+  }
+
+  @media only screen and (max-width: 576px) {
+    font-size: 1.2em;
+    line-height: 30px;
+    margin-bottom: 14px;
+  }
+}
+
+.upload-helper {
+  align-items: center;
+  justify-content: center;
+
+  .text p {
+    text-align: center;
+    margin-bottom: 18px;
+    font-size: 18px;
+
+    &.title {
+      margin-top: 20px;
+      color: $primary;
+      font-weight: 700;
+    }
+  }
+
+  .image {
+    text-align: center;
+  }
+}
+
+.upload {
+  flex-direction: column;
+  text-align: center;
+
+  input {
+    display: none;
+  }
+
+  p {
+    font-size: 14px;
+    margin-bottom: 2px;
+    text-align: center;
+    color: #5e5e5e;
+  }
+
+  .buttons {
+    margin-bottom: 10px;
+
+    button {
+      margin: 10px 10px;
+    }
+  }
+
+  .arquivo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .remover {
+    border: none;
+    background: none;
+    color: $error;
+    cursor: pointer;
+  }
+}
+
+.version-support {
+  margin-top: 30px;
+  font-size: 13px !important;
+}
+
+.botao {
+  color: #fff;
+  background-color: $contrast;
+  border-color: #ffffff00;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 100px;
+  min-width: 230px;
+  cursor: pointer;
+
+  &:hover {
+    color: #ffffffdd;
+    background-color: #{$contrast}dd;
+    border-color: #ffffff00dd;
+  }
+
+  &.primary {
+    background-color: $primary;
+
+    &:hover {
+      background-color: #{$primary}dd;
+    }
+  }
+
+  &:disabled,
+  &:disabled:hover {
+    background-color: #dddddd;
+    cursor: auto;
+  }
+
+  .content {
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+    padding: 0 20px;
+
+    svg {
+      margin-right: 10px;
+    }
+
+    .text-container {
+      max-height: 58px;
+      padding: 16px 0;
+      font-weight: 700;
+      font-size: 18px;
+      font-family: Rawline;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+.resultado {
+  margin-top: 24px;
+  border-top: 1px solid #dee9e5;
+
+  .resultado-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 8px;
+    font-weight: 700;
+  }
+
+  .tag {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: #fff;
+
+    &.sucesso {
+      background: $success;
+    }
+
+    &.erro {
+      background: $error;
+    }
+  }
+
+  .item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 8px;
+    border-top: 1px solid #dee9e5;
+    text-align: left;
+
+    &.sucesso .status-icon {
+      color: $success;
+    }
+
+    &.erro .status-icon {
+      color: $error;
+    }
+
+    &.alerta .status-icon {
+      color: $undetermined;
+    }
+  }
+
+  .item-titulo {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .item-descricao {
+    font-size: 13px;
+    color: #494949;
+  }
+}
+
+.copyright-container {
+  width: 100vw;
+  text-align: center;
+  background-color: white;
+}
+
+.footer-container {
+  .prefooter {
+    padding: 40px 20px 20px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+
+    span {
+      text-transform: uppercase;
+      text-align: left;
+    }
+  }
+
+  .item {
+    height: 3em !important;
+    justify-content: space-between;
+
+    .content {
+      font-size: 14px;
+      line-height: 18px;
+    }
+  }
+}

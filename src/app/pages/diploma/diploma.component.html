@@ -1,0 +1,66 @@
+<navbar></navbar>
+<ng-container *ngIf="user">
+  <div class="container">
+    <div class="header">
+      <div class="row">
+        <div class="col-md-3">
+          <h1>{{ user.nomeAluno }}</h1>
+          <p><b>CPF: </b>{{ formataCPF(user.cpfAluno) | mask: '000.000.000-00' }}</p>
+          <p><b>Data de Nascimento: </b>{{ user.dataNascimento | date: 'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="col-md-3 offset-md-1 col-lg-3 second-block">
+          <p><b>Naturalidade: </b> {{ user.naturalidade }}</p>
+          <p><b>RG: </b>{{ user.numIdentidade }}</p>
+          <p><b>Sexo: </b>{{ user.sexo | sexoEStatus }}</p>
+        </div>
+        <div class="col-md-5 col-lg-6 btn-status-container">
+          <button [ngClass]="user.diplomaDigitalCancelado === 'N' ? 'ativo' : 'inativo'">
+            Status do diploma: <b>{{ user.diplomaDigitalCancelado | sexoEStatus }}</b>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section-pesquisa">
+    <div class="container">
+      <div class="row">
+        <section class="col-md-8">
+          <ng-container *ngIf="pdf; else semPdf">
+            <pdf-viewer class="pdf-content" [src]="pdf" [render-text]="false" [fit-to-page]="true" [autoresize]="true"></pdf-viewer>
+          </ng-container>
+          <ng-template #semPdf>
+            <img src="assets/images/diploma-frente.png" class="img-fluid w-100" alt="diploma" />
+          </ng-template>
+        </section>
+        <section class="col-md-4">
+          <div class="row pdf-buttons">
+            <div class="col-sm-12 btn-downloads">
+              <ng-container *ngIf="!semXML">
+                <a class="btn btn-orange" [href]="xmlDownloadLink" download="documento.xml">Baixar XML</a>
+              </ng-container>
+              <a class="btn btn-orange" [href]="pdfDownloadLink" download="documento.pdf">Baixar {{ user.codTipoCurso === 1 ? 'RVCD' : 'RVDD' }}</a>
+            </div>
+            <ng-container *ngIf="user.diplomaDigitalCancelado === 'N' && !semXML">
+              <div class="col-sm-12">
+                <a class="btn btn-validar" [routerLink]="['/conformidade', codigo]">Portal de conformidade do XML</a>
+              </div>
+            </ng-container>
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="open(1)" [attr.aria-expanded]="dadosDiplomaOpen[1]" aria-controls="collapseBasic">Dados da IES Emissora</button>
+              <dados id="collapseBasic" [collapse]="!dadosDiplomaOpen[1]" [isAnimated]="true" [dados]="dadosIES" [tipo]="'dados-ies'" [tipoCurso]="user.codTipoCurso"></dados>
+            </div>
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="open(2)" [attr.aria-expanded]="dadosDiplomaOpen[2]" aria-controls="collapseBasic">Dados do Curso</button>
+              <dados id="collapseBasic" [collapse]="!dadosDiplomaOpen[2]" [isAnimated]="true" [dados]="dadosCurso" [tipo]="'dados-curso'" [tipoCurso]="user.codTipoCurso"></dados>
+            </div>
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="open(3)" [attr.aria-expanded]="dadosDiplomaOpen[3]" aria-controls="collapseBasic">Dados do Registro</button>
+              <dados id="collapseBasic" [collapse]="!dadosDiplomaOpen[3]" [isAnimated]="true" [dados]="dadosRegistro" [tipo]="'dados-registro'" [tipoCurso]="user.codTipoCurso"></dados>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</ng-container>

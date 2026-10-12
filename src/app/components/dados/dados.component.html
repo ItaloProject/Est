@@ -1,0 +1,249 @@
+<!-- ===================== DADOS DO REGISTRO ===================== -->
+<div *ngIf="tipo === 'dados-registro'">
+  <div class="body">
+    <label>Nome</label>
+    <p>{{ dados?.Nome?.[0] }}</p>
+    <label>Código MEC</label>
+    <p>{{ dados?.CodigoMEC?.[0] }}</p>
+    <label>CNPJ</label>
+    <p>{{ dados?.CNPJ?.[0] }}</p>
+
+    <h5>Endereço do Curso</h5>
+    <ng-container *ngIf="dados?.Endereco?.[0] as end">
+      <ng-container *ngIf="end.Logradouro"><label>Logradouro</label><p>{{ end.Logradouro[0] }}</p></ng-container>
+      <ng-container *ngIf="end.Numero"><label>Número</label><p>{{ end.Numero[0] }}</p></ng-container>
+      <ng-container *ngIf="end.Complemento"><label>Complemento</label><p>{{ end.Complemento[0] }}</p></ng-container>
+      <label>Bairro</label>
+      <p>{{ end.Bairro?.[0] }}</p>
+      <label>CEP</label>
+      <p>{{ end.CEP?.[0] }}</p>
+      <label>Município</label>
+      <p>{{ end.NomeMunicipio?.[0] }}</p>
+      <label>Código do Município</label>
+      <p>{{ end.CodigoMunicipio?.[0] }}</p>
+      <label>UF</label>
+      <p>{{ end.UF?.[0] }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Credenciamento?.[0] as cred">
+      <h5>Credenciamento</h5>
+      <label>Tipo</label>
+      <p>{{ cred.Tipo?.[0] }}</p>
+      <label>Número</label>
+      <p>{{ cred.Numero?.[0] }}</p>
+      <label>Data</label>
+      <p>{{ cred.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Data de publicação</label>
+      <p>{{ cred.DataPublicacao?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Seção</label>
+      <p>{{ cred.SecaoPublicacao?.[0] }}</p>
+      <label>Página</label>
+      <p>{{ cred.PaginaPublicacao?.[0] }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Recredenciamento?.[0] as recred">
+      <h5>Recredenciamento</h5>
+      <label>Recredenciado</label>
+      <p>{{ recred.Tipo?.[0] }}</p>
+      <label>Número</label>
+      <p>{{ recred.Numero?.[0] }}</p>
+      <label>Data</label>
+      <p>{{ recred.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Seção</label>
+      <p>{{ recred.SecaoPublicacao?.[0] }}</p>
+      <label>Página</label>
+      <p>{{ recred.PaginaPublicacao?.[0] }}</p>
+      <label>Data de Publicação</label>
+      <p>{{ recred.DataPublicacao?.[0] | date: 'dd/MM/yyyy' }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Mantenedora?.[0] as mant">
+      <h5>Dados da Mantenedora</h5>
+      <label>Razão Social</label>
+      <p>{{ mant.RazaoSocial?.[0] }}</p>
+      <label>CNPJ</label>
+      <p>{{ mant.CNPJ?.[0] }}</p>
+      <ng-container *ngIf="mant.Endereco?.[0] as mend">
+        <ng-container *ngIf="mend.Logradouro"><label>Logradouro</label><p>{{ mend.Logradouro[0] }}</p></ng-container>
+        <ng-container *ngIf="mend.Numero"><label>Número</label><p>{{ mend.Numero[0] }}</p></ng-container>
+        <ng-container *ngIf="mend.Complemento"><label>Complemento</label><p>{{ mend.Complemento[0] }}</p></ng-container>
+        <label>Bairro</label>
+        <p>{{ mend.Bairro?.[0] }}</p>
+        <label>CEP</label>
+        <p>{{ mend.CEP?.[0] }}</p>
+        <label>Município</label>
+        <p>{{ mend.NomeMunicipio?.[0] }}</p>
+        <label>Código do Município</label>
+        <p>{{ mend.CodigoMunicipio?.[0] }}</p>
+        <label>UF</label>
+        <p>{{ mend.UF?.[0] }}</p>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.LivroRegistro as livro">
+      <h5>Livro Registro</h5>
+      <label>Livro Registro</label>
+      <p>{{ livro.LivroRegistro?.[0] }}</p>
+      <label>Número Folha do {{ tipoCurso === 1 ? 'Certificado' : 'Diploma' }}</label>
+      <p>{{ livro.NumeroFolhaDoDiploma?.[0] }}</p>
+      <label>Número Sequência do {{ tipoCurso === 1 ? 'Certificado' : 'Diploma' }}</label>
+      <p>{{ livro.NumeroSequenciaDoDiploma?.[0] }}</p>
+      <ng-container *ngIf="tipoCurso !== 1">
+        <label>Processo do Diploma</label>
+        <p>{{ livro.ProcessoDoDiploma?.[0] }}</p>
+        <label>Data Colação Grau</label>
+        <p>{{ livro.DataColacaoGrau?.[0] | date: 'dd/MM/yyyy' }}</p>
+      </ng-container>
+      <label>Data de Expedição do {{ tipoCurso === 1 ? 'Certificado' : 'Diploma' }}</label>
+      <p>{{ livro.DataExpedicaoDiploma?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Data de Registro do {{ tipoCurso === 1 ? 'Certificado' : 'Diploma' }}</label>
+      <p>{{ livro.DataRegistroDiploma?.[0] | date: 'dd/MM/yyyy' }}</p>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ===================== DADOS DO CURSO ===================== -->
+<div *ngIf="tipo === 'dados-curso'">
+  <div class="body">
+    <label>Nome do Curso</label>
+    <p>{{ dados?.NomeCurso?.[0] }}</p>
+    <label>Código Curso EMEC</label>
+    <p>{{ dados?.CodigoCursoEMEC?.[0] }}</p>
+    <ng-container *ngIf="dados?.NumeroHabilitacao">
+      <label>Nome Habilitação</label>
+      <p>{{ dados?.NomeHabilitacao?.[0] }}</p>
+    </ng-container>
+    <label>Titulo Conferido</label>
+    <p>{{ dados?.TituloConferido?.[0]?.OutroTitulo?.[0] }}</p>
+    <label>Grau Conferido</label>
+    <p>{{ dados?.GrauConferido?.[0] }}</p>
+
+    <ng-container *ngIf="dados?.EnderecoCurso?.[0] as end">
+      <h5>Endereço do Curso</h5>
+      <ng-container *ngIf="end.Logradouro"><label>Logradouro</label><p>{{ end.Logradouro[0] }}</p></ng-container>
+      <label>Bairro</label>
+      <p>{{ end.Bairro?.[0] }}</p>
+      <label>CEP</label>
+      <p>{{ end.CEP?.[0] }}</p>
+      <label>Município</label>
+      <p>{{ end.NomeMunicipio?.[0] }}</p>
+      <label>Código do Município</label>
+      <p>{{ end.CodigoMunicipio?.[0] }}</p>
+      <label>UF</label>
+      <p>{{ end.UF?.[0] }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Autorizacao?.[0] as aut">
+      <h5>Autorização</h5>
+      <label>Tipo</label>
+      <p>{{ aut.Tipo?.[0] }}</p>
+      <ng-container *ngIf="aut.Numero"><label>Número</label><p>{{ aut.Numero[0] }}</p></ng-container>
+      <ng-container *ngIf="aut.Complemento"><label>Complemento</label><p>{{ aut.Complemento[0] }}</p></ng-container>
+      <label>Data</label>
+      <p>{{ aut.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Reconhecimento?.[0] as rec">
+      <h5>Reconhecimento</h5>
+      <label>Tipo</label>
+      <p>{{ rec.Tipo?.[0] }}</p>
+      <label>Número</label>
+      <p>{{ rec.Numero?.[0] }}</p>
+      <label>Data</label>
+      <p>{{ rec.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.RenovacaoReconhecimento?.[0] as ren">
+      <h5>Renovação Reconhecimento</h5>
+      <label>Data</label>
+      <p>{{ ren.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Número</label>
+      <p>{{ ren.Numero?.[0] }}</p>
+      <label>Tipo</label>
+      <p>{{ ren.Tipo?.[0] }}</p>
+    </ng-container>
+  </div>
+</div>
+
+<!-- ===================== DADOS DA IES ===================== -->
+<div *ngIf="tipo === 'dados-ies'">
+  <div class="body">
+    <label>Nome</label>
+    <p>{{ dados?.Nome?.[0] }}</p>
+    <label>Código MEC</label>
+    <p>{{ dados?.CodigoMEC?.[0] }}</p>
+    <label>CNPJ</label>
+    <p>{{ dados?.CNPJ?.[0] }}</p>
+
+    <ng-container *ngIf="dados?.Endereco?.[0] as end">
+      <h5>Endereço</h5>
+      <ng-container *ngIf="end.Logradouro"><label>Logradouro</label><p>{{ end.Logradouro[0] }}</p></ng-container>
+      <ng-container *ngIf="end.Numero"><label>Número</label><p>{{ end.Numero[0] }}</p></ng-container>
+      <ng-container *ngIf="end.Complemento"><label>Complemento</label><p>{{ end.Complemento[0] }}</p></ng-container>
+      <label>Bairro</label>
+      <p>{{ end.Bairro?.[0] }}</p>
+      <label>CEP</label>
+      <p>{{ end.CEP?.[0] }}</p>
+      <label>Município</label>
+      <p>{{ end.NomeMunicipio?.[0] }}</p>
+      <label>Código do Município</label>
+      <p>{{ end.CodigoMunicipio?.[0] }}</p>
+      <label>UF</label>
+      <p>{{ end.UF?.[0] }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Credenciamento?.[0] as cred">
+      <h5>Credenciamento</h5>
+      <label>Tipo</label>
+      <p>{{ cred.Tipo?.[0] }}</p>
+      <label>Número</label>
+      <p>{{ cred.Numero?.[0] }}</p>
+      <label>Data</label>
+      <p>{{ cred.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Data de publicação</label>
+      <p>{{ cred.DataPublicacao?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Seção</label>
+      <p>{{ cred.SecaoPublicacao?.[0] }}</p>
+      <label>Página</label>
+      <p>{{ cred.PaginaPublicacao?.[0] }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Recredenciamento?.[0] as recred">
+      <h5>Recredenciamento</h5>
+      <label>Recredenciado</label>
+      <p>{{ recred.Tipo?.[0] }}</p>
+      <label>Número</label>
+      <p>{{ recred.Numero?.[0] }}</p>
+      <label>Data</label>
+      <p>{{ recred.Data?.[0] | date: 'dd/MM/yyyy' }}</p>
+      <label>Seção</label>
+      <p>{{ recred.SecaoPublicacao?.[0] }}</p>
+      <label>Página</label>
+      <p>{{ recred.PaginaPublicacao?.[0] }}</p>
+      <label>Data de Publicação</label>
+      <p>{{ recred.DataPublicacao?.[0] | date: 'dd/MM/yyyy' }}</p>
+    </ng-container>
+
+    <ng-container *ngIf="dados?.Mantenedora?.[0] as mant">
+      <h5>Dados da Mantenedora</h5>
+      <label>Razão Social</label>
+      <p>{{ mant.RazaoSocial?.[0] }}</p>
+      <label>CNPJ</label>
+      <p>{{ mant.CNPJ?.[0] }}</p>
+      <ng-container *ngIf="mant.Endereco?.[0] as mend">
+        <ng-container *ngIf="mend.Logradouro"><label>Logradouro</label><p>{{ mend.Logradouro[0] }}</p></ng-container>
+        <ng-container *ngIf="mend.Numero"><label>Número</label><p>{{ mend.Numero[0] }}</p></ng-container>
+        <label>Bairro</label>
+        <p>{{ mend.Bairro?.[0] }}</p>
+        <label>CEP</label>
+        <p>{{ mend.CEP?.[0] }}</p>
+        <label>Município</label>
+        <p>{{ mend.NomeMunicipio?.[0] }}</p>
+        <label>Código do Município</label>
+        <p>{{ mend.CodigoMunicipio?.[0] }}</p>
+        <label>UF</label>
+        <p>{{ mend.UF?.[0] }}</p>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

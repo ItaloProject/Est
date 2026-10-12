@@ -1,0 +1,120 @@
+.header {
+  padding: 3.313rem 0 2.25rem;
+
+  h1 {
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    color: #3d3d3d;
+  }
+
+  p {
+    font-weight: 400;
+    font-size: 0.875rem;
+    line-height: 1rem;
+    color: #3d3d3d;
+    margin-bottom: 0.625rem;
+  }
+
+  .second-block {
+    @media (min-width: 992px) {
+      margin-left: 0;
+    }
+  }
+
+  .btn-status-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+    button {
+      border: none;
+      outline: none;
+      border-radius: 0.313rem;
+      padding: 0.5rem 0.75rem;
+
+      &.ativo {
+        background-color: #a5d6a7;
+      }
+
+      &.inativo {
+        background-color: #ffcc80;
+      }
+
+      &:hover {
+        cursor: default !important;
+      }
+    }
+  }
+}
+
+.pdf-content {
+  height: 850px;
+
+  @media (max-width: 767px) {
+    height: 500px;
+  }
+}
+
+@media (max-width: 767px) {
+  button {
+    width: 100%;
+  }
+}
+
+.section-pesquisa {
+  background-color: #fff;
+  padding: 2.813rem 0;
+
+  .diploma-container {
+    border: 0.063rem solid #ededed;
+    padding: 1rem 1rem 1.813rem;
+    max-height: 53.438rem;
+
+    .diploma-verso {
+      margin-top: 0.625rem;
+    }
+  }
+
+  .pdf-buttons {
+    @media screen and (max-width: 767px) {
+      margin-top: 2.5rem;
+    }
+
+    button,
+    a {
+      padding: 1rem;
+      width: 100%;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      font-size: 0.813rem;
+      line-height: 0.938rem;
+      color: #383838;
+      max-height: 3rem;
+
+      &:hover {
+        filter: brightness(0.9);
+        cursor: pointer;
+      }
+    }
+
+    .btn-orange {
+      background-color: #ffb934;
+    }
+
+    .btn-dados {
+      background-color: #e8e8e8;
+      border: 0.063rem solid #d1d1d1;
+    }
+
+    .btn-validar {
+      background-color: #00b3ff;
+      color: #fff;
+    }
+
+    .btn-downloads {
+      display: flex;
+      grid-gap: 0.5rem;
+    }
+  }
+}

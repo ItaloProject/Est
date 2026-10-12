@@ -1,0 +1,176 @@
+<ngx-spinner bdColor="rgba(0, 0, 0, .3)" size="medium" color="#fff" type="ball-scale-multiple">
+  <p style="font-size: 20px; color: #fff">Carregando...</p>
+</ngx-spinner>
+
+<ng-container *ngIf="!ies">
+  <div class="alert alert-warning alert-custom">
+    <p>Não permitido!</p>
+  </div>
+</ng-container>
+
+<ng-container *ngIf="ies">
+  <navbar></navbar>
+
+  <section class="container-fluid" [ngClass]="{ estacioSubHeader: ies.codigo === 1 }">
+    <div class="container">
+      <div class="row" style="padding: 44px 0 39px 0">
+        <div class="col-md-7 header">
+          <div>
+            <h1>Busca de Informações de Registro de Diplomas</h1>
+            <p id="texto-topo">
+              Busca de Informações de Registro de Diplomas Em atendimento à Portaria MEC nº 1.095/2018, publicada no Diário Oficial da União em 26.10.2018, que dispõe sobre a expedição e o registro de diplomas de cursos superiores de graduação no âmbito do sistema federal de ensino, a {{ ies.name }} disponibiliza nesta página todos os Diplomas dos alunos que colaram grau a partir de 25.4.2019 para fins de verificação de autenticidade.
+            </p>
+            <p id="subtexto-topo">Selecione o nome completo do aluno ou o número de registro do diploma.</p>
+          </div>
+        </div>
+        <div class="col-md-5 col-lg-4 offset-lg-1 col-xl-4 offset-xl-1 card-blue-container d-none d-md-block">
+          <div class="card-topo-consulta">
+            <div class="row">
+              <div class="col-12 content-card">
+                <div><img src="assets/images/cartao.png" /></div>
+                <p>DIPLOMA DIGITAL</p>
+              </div>
+            </div>
+            <form (submit)="buscaDigital(codigo.value)">
+              <input #codigo placeholder="Código de verificação" mask="AAA.AAA.AAAAAAAAAAAA||AAAA.AAA.AAAAAAAAAAAA" />
+              <button type="submit"><i-bs name="arrow-right-short"></i-bs></button>
+            </form>
+            <div class="msg-erro-consulta-diploma" *ngIf="erroDiploma">
+              <alert [type]="'danger'" [dismissible]="true">Diploma não encontrado</alert>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mobile -->
+  <section class="section-pesquisa-mobile d-block d-md-none">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12 pesquisa-mobile">
+          <div class="btn-pesquisa" *ngFor="let botao of botaoPesquisa; let i = index" (click)="clicouPesquisar(i)">
+            <label>{{ botao }}</label>
+            <img src="assets/images/arrow-right.svg" alt="seta-direita" class="seta-direita" />
+          </div>
+
+          <div class="container-pesquisa-mobile" *ngIf="indexBotao !== null">
+            <div class="btn-voltar" (click)="clicouVoltar()">
+              <img src="assets/images/arrow-left.svg" alt="seta-esquerda" class="seta-esquerda" />
+              <label>Voltar</label>
+            </div>
+            <busca [ies]="ies"></busca>
+          </div>
+
+          <div class="container-pesquisa-mobile" *ngIf="indexBotao === 0">
+            <div class="btn-voltar" (click)="clicouVoltar()">
+              <img src="assets/images/arrow-left.svg" alt="seta-esquerda" class="seta-esquerda" />
+              <label>Voltar</label>
+            </div>
+            <div>
+              <h3>QRCODE</h3>
+              <p>Abra a camera do seu celular e aponte para o QRCODE do seu diploma</p>
+            </div>
+            <section class="section-diploma">
+              <div class="container">
+                <div class="col-sm-12">
+                  <h1 class="title">Onde encontro o QRCODE no diploma?</h1>
+                </div>
+                <div class="col-sm-12">
+                  <p>Frente</p>
+                  <img src="assets/images/diploma-frente.png" class="img-fluid" />
+                </div>
+                <div class="col-sm-12 verso">
+                  <div>
+                    <p>Verso</p>
+                    <img src="assets/images/diploma-verso.png" class="img-fluid" />
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="container-pesquisa-mobile" *ngIf="indexBotao === 2">
+            <div class="btn-voltar" (click)="clicouVoltar()">
+              <img src="assets/images/arrow-left.svg" alt="seta-esquerda" class="seta-esquerda" />
+              <label>Voltar</label>
+            </div>
+            <div class="card-blue-container">
+              <div class="card-topo-consulta card-topo-consulta-mobile">
+                <div class="row">
+                  <div class="col-12 content-card">
+                    <div><img src="assets/images/cartao.png" /></div>
+                    <p>DIPLOMA DIGITAL</p>
+                  </div>
+                </div>
+                <form (submit)="buscaDigital(codigo.value)">
+                  <input #codigo placeholder="Código de verificação" mask="AAA.AAA.AAAAAAAAAAAA||AAAA.AAA.AAAAAAAAAAAA" />
+                  <button type="submit"><i-bs name="arrow-right-short"></i-bs></button>
+                </form>
+                <div class="msg-erro-consulta-diploma" *ngIf="erroDiploma">
+                  <alert [type]="'danger'" [dismissible]="true">Diploma não encontrado</alert>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Desktop -->
+  <section class="section-pesquisa d-none d-md-block">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <busca [ies]="ies"></busca>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-diploma" *ngIf="indexBotao === null">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="title d-none d-md-block">Onde encontro o código no diploma?</h1>
+          <h1 class="title d-block d-md-none">Onde encontro o código e o QRCODE no diploma?</h1>
+        </div>
+        <div class="col-sm-12 col-md-6">
+          <p>Frente</p>
+          <img src="assets/images/diploma-frente.png" class="img-fluid" />
+        </div>
+        <div class="col-sm-12 col-md-6 verso">
+          <div>
+            <p>Verso</p>
+            <img src="assets/images/diploma-verso.png" class="img-fluid" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-faq d-none__d-md-block">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 class="title">Dúvidas frequentes</h1>
+        </div>
+        <div class="col-md-12">
+          <accordion [isAnimated]="true">
+            <accordion-group *ngFor="let duvida of faq.duvidas; let i = index" (click)="open(i)">
+              <div accordion-heading class="accordion-header">
+                {{ duvida.duvida }}
+                <span class="chevron">
+                  <i-bs name="chevron-down" *ngIf="!opened[i]"></i-bs>
+                  <i-bs name="chevron-up" *ngIf="opened[i]"></i-bs>
+                </span>
+              </div>
+              <p>{{ duvida.texto }}</p>
+            </accordion-group>
+          </accordion>
+        </div>
+      </div>
+    </div>
+  </section>
+</ng-container>

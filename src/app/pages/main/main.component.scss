@@ -1,0 +1,309 @@
+navbar {
+  margin-bottom: 1rem;
+}
+
+.header {
+  padding: 0;
+
+  @media (min-width: 576px) {
+    padding: 0 0.75rem;
+  }
+
+  h1 {
+    line-height: 2.31rem;
+    color: #373737;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+
+    @media (min-width: 768px) {
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 2.5rem;
+    }
+  }
+
+  p {
+    color: #676767;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    line-height: 1rem;
+
+    @media (min-width: 768px) {
+      font-size: 1rem;
+      line-height: 1.18rem;
+    }
+
+    &:last-child {
+      margin-top: 1.5rem;
+    }
+  }
+
+  .remove-texto {
+    display: none !important;
+
+    @media screen and (min-width: 768px) {
+      display: block !important;
+    }
+  }
+}
+
+.card-blue-container {
+  @media (max-width: 767px) {
+    margin-top: 1.5rem;
+  }
+
+  .card-topo-consulta {
+    max-width: 17.5rem;
+    min-width: 15rem;
+    height: 10.688rem;
+    background: linear-gradient(to right, #3117d6, #2511a4);
+    padding: 2rem 2rem 1.625rem 1.438rem;
+    border-radius: 0.313rem;
+    flex-direction: column;
+    display: flex;
+    margin-left: auto;
+
+    @media (min-width: 320px) {
+      max-width: 18.75rem;
+    }
+
+    @media (max-width: 767px) {
+      margin: 0;
+    }
+
+    .content-card {
+      display: flex;
+      margin-bottom: 1.75rem;
+
+      p {
+        text-align: left;
+        vertical-align: middle;
+        font-weight: 700;
+        font-size: 1.5rem;
+        line-height: 1.75rem;
+        color: #fff;
+        margin: 0 0 0 0.625rem;
+
+        @media (min-width: 320px) {
+          margin: 0 0 0 1.125rem;
+        }
+      }
+    }
+
+    form {
+      input {
+        border-radius: 0.313rem;
+        border: none;
+        outline: none;
+        width: 100%;
+        background: #fff;
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        line-height: 0.875rem;
+        color: #4e4e4e;
+      }
+
+      button {
+        border: none;
+        background: none;
+        position: absolute;
+        margin: 2px 0 0 -27px;
+      }
+    }
+  }
+
+  .card-topo-consulta-mobile {
+    max-width: 100%;
+  }
+
+  .msg-erro-consulta-diploma {
+    margin-top: 50px;
+
+    @media (min-width: 768px) {
+      margin-top: 30px;
+    }
+  }
+}
+
+section.section-pesquisa,
+section.section-faq {
+  background-color: #fff;
+}
+
+.mobile-only {
+  display: block;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.title {
+  position: relative;
+  margin: 0;
+  font-weight: 700;
+  color: #373737;
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+    line-height: 2.31rem;
+  }
+
+  &:before {
+    content: '';
+    position: absolute;
+    top: -0.438rem;
+    height: 0.25rem;
+    width: 4.063rem;
+    background-color: #ffb934;
+  }
+}
+
+.section-pesquisa-mobile {
+  background-color: #fff;
+  padding-top: 1rem;
+
+  .btn-pesquisa,
+  .btn-voltar {
+    background-color: #fbfbfb;
+    border: 0.063rem solid #ebebeb;
+    border-radius: 0.313rem;
+    outline: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1rem;
+    color: #5e5e5e;
+    padding: 1.25rem;
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover {
+      cursor: pointer;
+      filter: brightness(0.9);
+    }
+  }
+
+  .container-pesquisa-mobile {
+    z-index: 1;
+    top: 0;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background: #fff;
+    left: 0;
+    padding: 0 0.75rem;
+    overflow-y: auto;
+
+    .btn-voltar {
+      max-width: 6rem;
+      margin: 1.375rem 0 2.938rem;
+    }
+
+    h3 {
+      font-weight: 700;
+      font-size: 2rem;
+      line-height: 2.313rem;
+      color: #5e5e5e;
+      margin-bottom: 1.25rem;
+    }
+
+    p {
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.438rem;
+      color: #5e5e5e;
+    }
+  }
+}
+
+.section-pesquisa {
+  padding: 4.313rem 0 5.875rem;
+}
+
+.section-diploma {
+  padding: 3.5rem 0 6.25rem;
+
+  @media (max-width: 767px) {
+    background-color: #fff !important;
+  }
+
+  p {
+    color: #2a0e51;
+    font-weight: 700;
+    margin: 1.625rem 0 0.5rem;
+    font-size: 18px;
+    line-height: 21px;
+  }
+
+  img {
+    width: 100%;
+    max-height: 22rem;
+  }
+
+  .verso {
+    @media (max-width: 767px) {
+      margin-top: 2rem;
+    }
+  }
+}
+
+.section-faq {
+  padding: 4rem 0;
+
+  accordion {
+    margin-top: 3.875rem;
+
+    .accordion-header {
+      font-weight: 700;
+      font-size: 1.25rem;
+      line-height: 1.5rem;
+      color: #000;
+      padding: 1rem 1.75rem;
+      position: relative;
+
+      @media (max-width: 991px) {
+        padding: 0.5rem 1.5rem 0.5rem 0;
+      }
+
+      span {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+
+        @media (max-width: 991px) {
+          right: 0;
+        }
+      }
+
+      &:hover {
+        filter: brightness(0.9) !important;
+      }
+    }
+
+    accordion-group {
+      border: 0.063rem solid #3117d6;
+      border-bottom: none;
+      border-radius: 0.25rem;
+    }
+  }
+}
+
+::ng-deep .card {
+  margin-bottom: 0.875rem;
+}
+
+::ng-deep .card-header,
+::ng-deep .card-body {
+  border-bottom: 0.063rem solid #3117d6;
+}
+
+::ng-deep .card-body {
+  border-radius: 0.125rem;
+  padding: 2rem 3.625rem 2rem 2.75rem;
+}

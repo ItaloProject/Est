@@ -1,0 +1,60 @@
+<div class="row">
+  <div class="col-md-7 col-lg-6 col-xl-5">
+    <div class="campo">
+      <form name="nameForm" [formGroup]="buscaForm" (ngSubmit)="buscar(10, 1, $event)">
+        <div [hidden]="instituicoes?.length === 1">
+          <p>Selecione uma instituição</p>
+          <select id="input-instituicao" class="form-select" formControlName="Instituicao">
+            <option selected disabled>Selecione uma instituição</option>
+            <option *ngFor="let instituicao of instituicoes" [value]="instituicao.codInstituicao">{{ instituicao.nome }}</option>
+          </select>
+          <label id="error-message-instituicao" style="display: none"></label>
+        </div>
+        <p>Busque pelo seu nome completo ou o número de registro</p>
+        <a href="#">Não achei o código, e agora?</a>
+        <div class="mb-2">
+          <input type="text" id="input-nome" class="form-control" formControlName="Nome" />
+        </div>
+        <label id="error-message-nome" style="display: none"></label>
+        <div class="mb-2">
+          <input type="text" id="input-captcha" class="form-captcha" formControlName="Captcha" mask="AAAA" />
+          <span>{{ captcha }}</span>
+        </div>
+        <label id="error-message-captcha" style="display: none"></label>
+        <button type="submit" class="btn btn-pesquisar" [disabled]="buscaForm.invalid" [attr.aria-expanded]="!isCollapsed" aria-controls="collapseBasic">
+          Pesquisar
+        </button>
+      </form>
+    </div>
+  </div>
+  <div class="col-md-5 col-lg-6 col-xl-7 image-container d-none d-md-flex">
+    <img src="assets/images/pesquisa.svg" />
+  </div>
+</div>
+
+<div id="Resultado">
+  <div id="collapseBasic" [collapse]="isCollapsed" [isAnimated]="true">
+    <div class="row container-resultado">
+      <div class="col-md-12">
+        <h1 class="title" *ngIf="resultadosBusca?.records.length > 0">Resultado da busca: {{ buscaForm.controls.Nome.value }}</h1>
+        <div *ngIf="resultadosBusca?.records.length == 0">
+          <h5 class="mt-4">Nenhum resultado encontrado. =(</h5>
+        </div>
+      </div>
+      <div class="col-md-5" *ngFor="let aluno of resultadosBusca?.records">
+        <div class="card">
+          <card-busca [maisInfo]="aluno"></card-busca>
+        </div>
+      </div>
+      <div class="paginacao">
+        <pagination
+          *ngIf="resultadosBusca?.total_record_count > 10"
+          [totalItems]="resultadosBusca?.total_record_count"
+          [itemsPerPage]="resultadosBusca?.page_size"
+          [maxSize]="20"
+          (pageChanged)="pageChanged($event)"
+        ></pagination>
+      </div>
+    </div>
+  </div>
+</div>
