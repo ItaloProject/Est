@@ -1,0 +1,51 @@
+<div class="tela">
+  <section class="lado-esquerdo">
+    <h2>Ensino <strong>Estácio.</strong><br>Brilhe com <strong>+ tecnologia.</strong></h2>
+    <img class="banner" src="assets/login/banner_01.png" alt="">
+  </section>
+
+  <section class="lado-direito">
+    <div class="miolo">
+      <div class="card">
+        <img class="logo" src="assets/login/logo-estacio-sia.png" alt="Estácio">
+        <h1>SIA - Sistema de Informações Acadêmicas</h1>
+        <p class="data">{{ dataFormatada }}</p>
+        <button type="button" class="btn-outlook" (click)="aviso('Entre com a matrícula e a senha criadas para este diploma.')">
+          <img src="assets/login/microsoft-outlook-24x24.png" alt="">
+          Entrar com e-mail de estudante
+        </button>
+        <div class="separador">OU</div>
+        <label class="rotulo" for="Usuario">Matrícula</label>
+        <div class="campo">
+          <input id="Usuario" name="usuario" [(ngModel)]="matricula" placeholder="Digite sua matrícula" autocomplete="username">
+          <span class="icone"><i class="fas fa-address-card"></i></span>
+        </div>
+        <a class="link" (click)="aviso('Use a matrícula impressa no diploma.')">Não sei ou esqueci a matrícula</a>
+        <label class="rotulo" for="Senha">Senha</label>
+        <div class="campo">
+          <input id="Senha" name="senha" [type]="mostrarSenha ? 'text' : 'password'" [(ngModel)]="senha" placeholder="Digite sua senha" autocomplete="current-password" (keyup.enter)="entrar()">
+          <span class="icone">
+            <button type="button" (click)="mostrarSenha = !mostrarSenha" [attr.aria-label]="mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'">
+              <i class="fas" [class.fa-eye]="mostrarSenha" [class.fa-eye-slash]="!mostrarSenha"></i>
+            </button>
+          </span>
+        </div>
+        <a class="link" (click)="aviso('A senha é a que foi gerada ao criar o diploma.')">Esqueci minha senha / Cadastrar primeira senha</a>
+        <div class="verificacao">
+          <label><input type="checkbox" [(ngModel)]="verificado"> Não sou um robô</label>
+          <small>Verificação<br>local</small>
+        </div>
+        <p class="erro">{{ mensagem }}</p>
+        <button type="button" class="btn-entrar" [disabled]="!verificado || enviando" (click)="entrar()">
+          {{ enviando ? 'Entrando...' : 'Entrar' }}
+        </button>
+      </div>
+    </div>
+    <footer class="chamada-faq">
+      <div>Está com dúvidas para fazer o login?</div>
+      <a href="#" (click)="$event.preventDefault(); aviso('Informe a matrícula e a senha, marque a verificação e clique em Entrar.')">
+        <i class="fas fa-question-circle"></i> Acessar Ajuda
+      </a>
+    </footer>
+  </section>
+</div>

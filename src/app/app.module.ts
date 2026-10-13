@@ -30,6 +30,7 @@ import { AppComponent } from './app.component';
 import { MainComponent } from './pages/main/main.component';
 import { DiplomaComponent } from './pages/diploma/diploma.component';
 import { ConformidadeComponent } from './pages/conformidade/conformidade.component';
+import { LoginComponent } from './pages/login/login.component';
 import { BuscaComponent } from './components/busca/busca.component';
 import { CardBuscaComponent } from './components/card-busca/card-busca.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -55,6 +56,7 @@ const icons = {
     MainComponent,
     DiplomaComponent,
     ConformidadeComponent,
+    LoginComponent,
     BuscaComponent,
     CardBuscaComponent,
     NavbarComponent,
