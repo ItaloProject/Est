@@ -136,6 +136,7 @@ export class ConformidadeComponent implements OnInit {
   ngOnInit(): void {
     const codigo = this.route.snapshot.paramMap.get('id') ?? '';
     const salvo = JSON.parse(sessionStorage.getItem('diplomaDigital'));
+    sessionStorage.removeItem('diplomaDigital');
 
     if (codigo && salvo && salvo.codValidacaoDiploma === codigo && salvo.codXmlPublico) {
       const bytes = Uint8Array.from(atob(salvo.codXmlPublico), (c) => c.charCodeAt(0));
