@@ -16,7 +16,6 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "polyfills": ["zone.js"],
-            "allowedCommonJsDependencies": ["pizzip", "docxtemplater", "docx-preview"],
             "assets": [{ "glob": "**/*", "input": "public" }, { "glob": "**/*", "input": "src/assets", "output": "assets" }],
             "styles": [
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
