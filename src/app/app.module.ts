@@ -23,6 +23,7 @@ import {
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { provideNgxMask, NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -76,6 +77,7 @@ const icons = {
     PdfViewerModule,
     NgxMaskDirective,
     NgxMaskPipe,
+    QRCodeComponent,
   ],
   providers: [
     provideZoneChangeDetection(),

@@ -31,6 +31,7 @@
     <div class="container">
       <div class="row">
         <section class="col-md-8">
+          <!-- Página 1 — Frente -->
           <div class="diploma-estacio">
             <div class="diploma-estacio__cabecalho">
               <p class="diploma-estacio__gov">REPÚBLICA FEDERATIVA DO BRASIL</p>
@@ -70,6 +71,19 @@
             <div class="diploma-estacio__rodape">
               <p>{{ publicacaoEstacio.instituicao }}</p>
               <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | est-fawn-sigma.vercel.app/diploma/{{ publicacaoEstacio.pub_id }}</p>
+            </div>
+          </div>
+
+          <!-- Página 2 — Verso (QR Code) -->
+          <div class="diploma-estacio diploma-estacio--verso">
+            <div class="diploma-verso__qr-area">
+              <qrcode
+                [qrdata]="'https://est-fawn-sigma.vercel.app/diploma/' + publicacaoEstacio.pub_id"
+                [width]="180"
+                [errorCorrectionLevel]="'M'"
+                [elementType]="'img'">
+              </qrcode>
+              <p class="diploma-verso__numero">{{ publicacaoEstacio.protocolo || publicacaoEstacio.pub_id }}</p>
             </div>
           </div>
         </section>
