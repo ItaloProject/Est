@@ -9,6 +9,7 @@ import { LoginComponent } from './pages/login/login.component';
 const routes: Routes = [
   { path: '', component: MainComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'sianet/Logon', component: LoginComponent },
   { path: 'diploma/:id', component: DiplomaComponent },
   { path: 'conformidade', component: ConformidadeComponent },
   { path: 'conformidade/:id', component: ConformidadeComponent },
