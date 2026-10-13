@@ -2,6 +2,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/portal-diplomas/browser",
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://function-portaldiplomas-prd.azurewebsites.net/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

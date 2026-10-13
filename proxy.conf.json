@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "https://function-portaldiplomas-prd.azurewebsites.net",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
