@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { BuscaService } from '../../services/busca.service';
+import { DiplomaComponent } from '../diploma/diploma.component';
 
 @Component({
   selector: 'app-main',
@@ -149,6 +150,11 @@ export class MainComponent implements OnInit {
   }
 
   buscaDigital(codigo: string): void {
+    const codigoLimpo = (codigo || '').trim();
+    if (DiplomaComponent.CODIGO_VALIDACAO_RE.test(codigoLimpo)) {
+      this.route.navigate(['/diploma/' + codigoLimpo]);
+      return;
+    }
     this.spinnerFunction();
     this.isLoading = true;
     this.erroDiploma = false;

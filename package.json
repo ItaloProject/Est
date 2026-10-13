@@ -22,6 +22,8 @@
     "docx-preview": "^0.4.1",
     "events": "^3.3.0",
     "fast-xml-parser": "^5.11.2",
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
     "ng2-pdf-viewer": "^10.4.0",
     "ngx-bootstrap": "^21.2.2",

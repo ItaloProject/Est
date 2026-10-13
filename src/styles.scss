@@ -40,3 +40,20 @@ body {
 .newton {
   background-color: #efefef;
 }
+
+/* docx-preview aplica a fonte padrão do tema (".docx span") a todo trecho sem fonte própria,
+   sobrepondo a fonte herdada do estilo do parágrafo (Normal = Arial). A especificidade (0,1,2)
+   vence ".docx span" mas empata com "p.docx_heading1 span", que vence por ser injetado depois. */
+section.docx span {
+  font-family: inherit;
+}
+
+/* O Word não hifeniza (settings.xml sem autoHyphenation) nem aplica kerning sem w:kern;
+   docx-preview liga "hyphens: auto" e o navegador aplica kerning por padrão, mudando as quebras de linha. */
+section.docx {
+  hyphens: manual;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  /* Desenhos "atrás do texto" usam z-index -1 e precisam ficar acima do fundo da própria seção. */
+  isolation: isolate;
+}

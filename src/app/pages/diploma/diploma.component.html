@@ -4,24 +4,20 @@
   <div class="container">
     <div class="header">
       <div class="row">
-        <div class="col-md-7">
-          <h1>{{ publicacaoEstacio.nome }}</h1>
-        </div>
-        <div class="col-md-5 btn-status-container">
-          <button [ngClass]="publicacaoEstacio.ativo ? 'ativo' : 'inativo'">
-            Status do diploma: <b>{{ publicacaoEstacio.ativo ? 'Ativo' : 'Cancelado' }}</b>
-          </button>
-        </div>
-      </div>
-      <div class="row" style="margin-top: 0.25rem;">
-        <div class="col-md-4">
+        <h1>{{ publicacaoEstacio.nome }}</h1>
+        <div class="col-md-3">
           <p><b>CPF: </b>{{ publicacaoEstacio.cpf }}</p>
           <p><b>Data de Nascimento: </b>{{ publicacaoEstacio.nascimento }}</p>
         </div>
-        <div class="col-md-4">
-          <p *ngIf="publicacaoEstacio.municipio"><b>Naturalidade: </b>{{ publicacaoEstacio.municipio }}</p>
+        <div class="col-md-3 offset-md-1 col-lg-3 second-block">
+          <p *ngIf="publicacaoEstacio.naturalidade"><b>Naturalidade: </b> {{ publicacaoEstacio.naturalidade }}</p>
           <p *ngIf="publicacaoEstacio.rg"><b>RG: </b>{{ publicacaoEstacio.rg }}</p>
           <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
+        </div>
+        <div class="col-md-5 col-lg-6 btn-status-container">
+          <button [ngClass]="publicacaoEstacio.ativo ? 'ativo' : 'inativo'">
+            Status do diploma: <b>{{ publicacaoEstacio.ativo ? 'Ativo' : 'Cancelado' }}</b>
+          </button>
         </div>
       </div>
     </div>
@@ -56,27 +52,27 @@
               <em>a</em>
               <strong>{{ publicacaoEstacio.nome }}</strong>
               <ng-container *ngIf="publicacaoEstacio.nacionalidade">, <em>nacionalidade</em> <strong>{{ publicacaoEstacio.nacionalidade }}</strong></ng-container>
-              <ng-container *ngIf="publicacaoEstacio.municipio">, <em>natural de</em> <strong>{{ publicacaoEstacio.municipio }}</strong></ng-container>
+              <ng-container *ngIf="publicacaoEstacio.naturalidade">, <em>natural de</em> <strong>{{ publicacaoEstacio.naturalidade }}</strong></ng-container>
               <ng-container *ngIf="publicacaoEstacio.nascimento">, <em>nascido(a) em</em> <strong>{{ publicacaoEstacio.nascimento }}</strong></ng-container>
               <ng-container *ngIf="publicacaoEstacio.rg">, <em>portador(a) da Cédula de Identidade</em> <strong>{{ publicacaoEstacio.rg }}</strong><ng-container *ngIf="publicacaoEstacio.orgao_expedidor">, <em>órgão expedidor</em> <strong>{{ publicacaoEstacio.orgao_expedidor }}</strong></ng-container></ng-container>,
               <em>e outorga-lhe o presente Diploma, a fim de que possa gozar de todos os direitos e prerrogativas legais.</em>
             </p>
 
             <p class="diploma-estacio__local">
-              {{ publicacaoEstacio.municipio || 'Brasil' }}, {{ publicacaoEstacio.data || publicacaoEstacio.ano_conclusao || '' }}.
+              {{ publicacaoEstacio.cidade_expedicao || publicacaoEstacio.municipio || 'Brasil' }}, {{ dataPorExtenso(publicacaoEstacio.data_expedicao || publicacaoEstacio.data || '') || publicacaoEstacio.ano_conclusao || '' }}.
             </p>
 
             <div class="diploma-estacio__ass-area">
               <div class="diploma-estacio__ass-item">
-                <div class="diploma-estacio__ass-linha"></div>
+                <img class="diploma-estacio__ass-imagem" src="assets/images/diploma-estacio-assinatura-reitor.png" alt="Assinatura do(a) Reitor(a)" />
                 <p class="diploma-estacio__ass-nome">{{ publicacaoEstacio.reitor || '' }}</p>
-                <p class="diploma-estacio__ass-cargo">Reitor(a)</p>
+                <p class="diploma-estacio__ass-cargo">Reitor (a)</p>
               </div>
             </div>
 
             <div class="diploma-estacio__rodape">
               <p>{{ publicacaoEstacio.instituicao }}</p>
-              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | est-fawn-sigma.vercel.app/diploma/{{ publicacaoEstacio.pub_id }}</p>
+              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | https://est-fawn-sigma.vercel.app/diploma/{{ publicacaoEstacio.pub_id }}</p>
             </div>
           </div>
 
@@ -86,6 +82,7 @@
               <qrcode
                 [qrdata]="'https://est-fawn-sigma.vercel.app/diploma/' + publicacaoEstacio.pub_id"
                 [width]="180"
+                [margin]="0"
                 [errorCorrectionLevel]="'M'"
                 [elementType]="'img'">
               </qrcode>
@@ -98,37 +95,49 @@
           <div class="row pdf-buttons">
             <div class="col-sm-12 btn-downloads">
               <button type="button" class="btn btn-orange" (click)="baixarXmlEstacio()">Baixar XML</button>
-              <a *ngIf="publicacaoEstacio.docx_url" class="btn btn-orange"
-                 [href]="publicacaoEstacio.docx_url + '?download=diploma-' + publicacaoEstacio.pub_id + '.docx'"
-                 rel="noopener">Baixar RVDD</a>
+              <button *ngIf="publicacaoEstacio.docx_url" type="button" class="btn btn-orange"
+                      [disabled]="docxCarregando || docxErro || gerandoPdf"
+                      (click)="baixarPdfEstacio()">{{ gerandoPdf ? 'Gerando PDF…' : 'Baixar RVDD' }}</button>
             </div>
             <div class="col-sm-12">
               <a class="btn btn-validar" [routerLink]="['/conformidade']">Portal de conformidade do XML</a>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>
-              <div *ngIf="dadosEstacioOpen[0]" class="dados-estacio-panel">
-                <p *ngIf="publicacaoEstacio.instituicao"><b>Instituição:</b> {{ publicacaoEstacio.instituicao }}</p>
-                <p *ngIf="publicacaoEstacio.inep"><b>INEP:</b> {{ publicacaoEstacio.inep }}</p>
-                <p *ngIf="publicacaoEstacio.endereco"><b>Endereço:</b> {{ publicacaoEstacio.endereco }}<span *ngIf="publicacaoEstacio.bairro">, {{ publicacaoEstacio.bairro }}</span></p>
-                <p *ngIf="publicacaoEstacio.municipio"><b>Município:</b> {{ publicacaoEstacio.municipio }}<span *ngIf="publicacaoEstacio.cep"> — {{ publicacaoEstacio.cep }}</span></p>
+              <div [collapse]="!dadosEstacioOpen[0]" [isAnimated]="true">
+                <div class="body">
+                  <ng-container *ngIf="publicacaoEstacio.instituicao"><label>Nome</label><p>{{ publicacaoEstacio.instituicao }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.inep"><label>INEP</label><p>{{ publicacaoEstacio.inep }}</p></ng-container>
+                  <h5 *ngIf="publicacaoEstacio.endereco || publicacaoEstacio.bairro || publicacaoEstacio.cep || publicacaoEstacio.municipio">Endereço</h5>
+                  <ng-container *ngIf="publicacaoEstacio.endereco"><label>Logradouro</label><p>{{ publicacaoEstacio.endereco }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.bairro"><label>Bairro</label><p>{{ publicacaoEstacio.bairro }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.cep"><label>CEP</label><p>{{ publicacaoEstacio.cep }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.municipio"><label>Município</label><p>{{ publicacaoEstacio.municipio }}</p></ng-container>
+                </div>
               </div>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(1)" [attr.aria-expanded]="dadosEstacioOpen[1]">Dados do Curso</button>
-              <div *ngIf="dadosEstacioOpen[1]" class="dados-estacio-panel">
-                <p *ngIf="publicacaoEstacio.curso"><b>Curso:</b> {{ publicacaoEstacio.curso }}</p>
-                <p *ngIf="publicacaoEstacio.modalidade"><b>Modalidade:</b> {{ publicacaoEstacio.modalidade }}</p>
-                <p *ngIf="publicacaoEstacio.ano_conclusao"><b>Ano de Conclusão:</b> {{ publicacaoEstacio.ano_conclusao }}</p>
+              <div [collapse]="!dadosEstacioOpen[1]" [isAnimated]="true">
+                <div class="body">
+                  <ng-container *ngIf="publicacaoEstacio.curso"><label>Nome do Curso</label><p>{{ publicacaoEstacio.curso }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.modalidade"><label>Grau Conferido</label><p>{{ publicacaoEstacio.modalidade }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.curso_reconhecimento"><label>Reconhecimento</label><p>{{ publicacaoEstacio.curso_reconhecimento }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.ano_conclusao"><label>Ano de Conclusão</label><p>{{ publicacaoEstacio.ano_conclusao }}</p></ng-container>
+                </div>
               </div>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(2)" [attr.aria-expanded]="dadosEstacioOpen[2]">Dados do Registro</button>
-              <div *ngIf="dadosEstacioOpen[2]" class="dados-estacio-panel">
-                <p *ngIf="publicacaoEstacio.protocolo"><b>Protocolo:</b> {{ publicacaoEstacio.protocolo }}</p>
-                <p *ngIf="publicacaoEstacio.data"><b>Data:</b> {{ publicacaoEstacio.data }}</p>
-                <p *ngIf="publicacaoEstacio.status"><b>Status:</b> {{ publicacaoEstacio.status }}</p>
-                <p *ngIf="publicacaoEstacio.observacao"><b>Observação:</b> {{ publicacaoEstacio.observacao }}</p>
+              <div [collapse]="!dadosEstacioOpen[2]" [isAnimated]="true">
+                <div class="body">
+                  <ng-container *ngIf="publicacaoEstacio.protocolo"><label>Protocolo</label><p>{{ publicacaoEstacio.protocolo }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.registro_numero"><label>Número do Registro</label><p>{{ publicacaoEstacio.registro_numero }}<ng-container *ngIf="publicacaoEstacio.registro_livro">, Livro {{ publicacaoEstacio.registro_livro }}</ng-container><ng-container *ngIf="publicacaoEstacio.registro_folha">, fls {{ publicacaoEstacio.registro_folha }}</ng-container></p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.registro_processo"><label>Processo</label><p>{{ publicacaoEstacio.registro_processo }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.registro_data || publicacaoEstacio.data"><label>Data de Registro do Diploma</label><p>{{ publicacaoEstacio.registro_data || publicacaoEstacio.data }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.status"><label>Status</label><p>{{ publicacaoEstacio.status }}</p></ng-container>
+                  <ng-container *ngIf="publicacaoEstacio.observacao"><label>Observação</label><p>{{ publicacaoEstacio.observacao }}</p></ng-container>
+                </div>
               </div>
             </div>
           </div>
@@ -142,8 +151,8 @@
   <div class="container">
     <div class="header">
       <div class="row">
+        <h1>{{ user.nomeAluno }}</h1>
         <div class="col-md-3">
-          <h1>{{ user.nomeAluno }}</h1>
           <p><b>CPF: </b>{{ formataCPF(user.cpfAluno) | mask: '000.000.000-00' }}</p>
           <p><b>Data de Nascimento: </b>{{ user.dataNascimento | date: 'dd/MM/yyyy' }}</p>
         </div>

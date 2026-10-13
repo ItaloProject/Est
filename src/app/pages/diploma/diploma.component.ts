@@ -34,9 +34,23 @@ export class DiplomaComponent implements OnInit {
   dadosEstacioOpen = [false, false, false];
   docxErro = false;
   docxCarregando = false;
+  gerandoPdf = false;
   private qrAlvo?: HTMLImageElement;
   @ViewChild('docxHost') docxHost?: ElementRef<HTMLDivElement>;
   private readonly MAPY_ID_RE = /^[0-9a-f]{10}$/i;
+  static readonly CODIGO_VALIDACAO_RE = /^\d{4}\.\d{3}\.[0-9a-f]{12}$/i;
+  // (hhea ascender + descender + lineGap) / unitsPerEm dos .ttf do Windows: é a altura da entrelinha simples no Word.
+  private static readonly ALTURA_LINHA_FONTE: Record<string, number> = {
+    arial: 1.1499,
+    'microsoft sans serif': 1.1318,
+    'times new roman': 1.1499,
+    calibri: 1.2207,
+  };
+
+  private alturaLinha(fonte: string | null | undefined): number {
+    const nome = (fonte || '').split(',')[0].replace(/['"]/g, '').trim().toLowerCase();
+    return DiplomaComponent.ALTURA_LINHA_FONTE[nome] ?? 1.15;
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
@@ -48,7 +62,9 @@ export class DiplomaComponent implements OnInit {
       return;
     }
 
-    if (this.MAPY_ID_RE.test(this.codigo)) {
+    const soMapy = this.MAPY_ID_RE.test(this.codigo);
+    if (soMapy || DiplomaComponent.CODIGO_VALIDACAO_RE.test(this.codigo)) {
+      const naoEncontrado = () => (soMapy ? this.router.navigate(['']) : this.carregarDiplomaDigital());
       this._busca.getPublicacaoEstacio(this.codigo).subscribe({
         next: (rows) => {
           if (rows?.length) {
@@ -58,14 +74,18 @@ export class DiplomaComponent implements OnInit {
               setTimeout(() => this.renderizarDocx(), 0);
             }
           } else {
-            this.router.navigate(['']);
+            naoEncontrado();
           }
         },
-        error: () => this.router.navigate(['']),
+        error: () => naoEncontrado(),
       });
       return;
     }
 
+    this.carregarDiplomaDigital();
+  }
+
+  private carregarDiplomaDigital(): void {
     const salvo = JSON.parse(sessionStorage.getItem('diplomaDigital'));
     const codSalvo = salvo ? salvo.codValidacaoDiploma : '';
 
@@ -121,10 +141,23 @@ export class DiplomaComponent implements OnInit {
     if (!wrapper || !secoes.length) return;
 
     const larg = secoes[0].offsetWidth;
-    const alturaMoldura = larg * (590 / 903);
+    const alturaPaginaPt = parseFloat(secoes[0].style.minHeight);
+    const alturaMoldura = alturaPaginaPt ? alturaPaginaPt * (96 / 72) : larg * (590 / 903);
     const paginas: { src: HTMLElement; topo: number; altura: number; clip: number; frente: boolean }[] = [];
 
-    if (secoes.length === 1) {
+    const inicios = secoes.length === 1
+      ? Array.from(secoes[0].querySelectorAll<HTMLElement>(':scope > article[data-pagina-inicio]'))
+          .map((a) => Number(a.dataset['paginaInicio']))
+      : [];
+
+    if (inicios.length) {
+      const sec = secoes[0];
+      const limites = [0, ...inicios, Math.max(sec.offsetHeight, inicios[inicios.length - 1] + alturaMoldura)];
+      for (let i = 0; i < limites.length - 1; i++) {
+        const altura = Math.max(alturaMoldura, limites[i + 1] - limites[i]);
+        paginas.push({ src: sec, topo: limites[i], altura, clip: limites[i + 1] - limites[i], frente: i === 0 });
+      }
+    } else if (secoes.length === 1) {
       const sec = secoes[0];
       const topoSec = sec.getBoundingClientRect().top;
       const ps = Array.from(sec.querySelectorAll<HTMLElement>('p'));
@@ -137,11 +170,7 @@ export class DiplomaComponent implements OnInit {
       if (idxVal >= 0 && prox) {
         const fimFrente = ps[idxVal].getBoundingClientRect().bottom - topoSec;
         const inicioVerso = prox.getBoundingClientRect().top - topoSec;
-        const anterior = idxVal > 0 ? ps[idxVal - 1] : undefined;
-        const temRodape = !!anterior && (anterior.textContent || '').trim().length > 0;
-        const topoRodape = (temRodape ? anterior!.getBoundingClientRect().top : ps[idxVal].getBoundingClientRect().top) - topoSec;
-        const alturaIdeal = topoRodape / 0.86;
-        const alturaFrente = Math.max(fimFrente + 25, Math.min(alturaMoldura, Math.max(alturaMoldura * 0.85, alturaIdeal)));
+        const alturaFrente = Math.max(alturaMoldura, fimFrente);
         paginas.push({ src: sec, topo: 0, altura: alturaFrente, clip: Math.min(alturaFrente, inicioVerso - 4), frente: true });
         const topoVerso = Math.max(0, inicioVerso - 12);
         paginas.push({ src: sec, topo: topoVerso, altura: sec.offsetHeight - topoVerso, clip: sec.offsetHeight - topoVerso, frente: false });
@@ -209,6 +238,7 @@ export class DiplomaComponent implements OnInit {
         breakPages: true,
         ignoreLastRenderedPageBreak: false,
       });
+      await this.aplicarTipografiaWord(blob, host).catch((e) => console.error('[docx tipografia]', e));
       await this.aplicarQrDinamico(host);
       await this.desenharGruposFlutuantes(blob, host).catch((e) => console.error('[docx grupos]', e));
       this.montarPaginas(host);
@@ -219,6 +249,152 @@ export class DiplomaComponent implements OnInit {
       this.docxCarregando = false;
       this.docxErro = true;
     }
+  }
+
+  private async aplicarTipografiaWord(blob: Blob, host: HTMLElement): Promise<void> {
+    const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const secao = host.querySelector<HTMLElement>('section.docx');
+    if (!secao) return;
+
+    const JSZip = (await import('jszip')).default;
+    const zip = await JSZip.loadAsync(blob);
+    const parser = new DOMParser();
+    const docXml = parser.parseFromString(await zip.file('word/document.xml')!.async('string'), 'application/xml');
+    const stylesTxt = await zip.file('word/styles.xml')?.async('string');
+    const stylesXml = stylesTxt ? parser.parseFromString(stylesTxt, 'application/xml') : null;
+
+    const filho = (el: Element | null | undefined, nome: string): Element | null =>
+      (el && Array.from(el.children).find((c) => c.localName === nome)) || null;
+    const attr = (el: Element | null | undefined, nome = 'val'): string | null => el?.getAttributeNS(W, nome) ?? null;
+
+    const estilos = new Map<string, Element>();
+    let estiloPadrao = 'Normal';
+    Array.from(stylesXml?.getElementsByTagNameNS(W, 'style') ?? []).forEach((s) => {
+      const id = attr(s, 'styleId');
+      if (!id) return;
+      estilos.set(id, s);
+      if (attr(s, 'type') === 'paragraph' && attr(s, 'default') === '1') estiloPadrao = id;
+    });
+    const rPrPadrao = filho(filho(stylesXml?.getElementsByTagNameNS(W, 'rPrDefault')[0], 'rPr'), 'sz');
+    const szPadrao = Number(attr(rPrPadrao) || 22);
+
+    const ligado = (el: Element | null): boolean | null => {
+      if (!el) return null;
+      const v = attr(el);
+      return v === null || !['0', 'false', 'off'].includes(v);
+    };
+
+    const doEstilo = (id: string | null, prop: 'rFonts' | 'sz' | 'b'): string | null => {
+      const vistos = new Set<Element>();
+      let s = id ? estilos.get(id) : undefined;
+      while (s && !vistos.has(s)) {
+        vistos.add(s);
+        const el = filho(filho(s, 'rPr'), prop);
+        const v = prop === 'rFonts' ? attr(el, 'ascii') : prop === 'b' ? (el ? String(ligado(el)) : null) : attr(el);
+        if (v) return v;
+        const base = attr(filho(s, 'basedOn'));
+        s = base ? estilos.get(base) : undefined;
+      }
+      return null;
+    };
+
+    const body = docXml.getElementsByTagNameNS(W, 'body')[0];
+    const paragrafosDoc = Array.from(body.children).filter((c) => c.localName === 'p');
+    const renderizados = Array.from(secao.querySelectorAll<HTMLElement>(':scope > article > p'));
+    if (paragrafosDoc.length !== renderizados.length) {
+      console.warn('[docx tipografia] parágrafos divergentes', paragrafosDoc.length, renderizados.length);
+      this.quebrarPaginaEntreSecoes(secao, body, W);
+      return;
+    }
+
+    paragrafosDoc.forEach((p, idx) => {
+      const el = renderizados[idx];
+      const pPr = filho(p, 'pPr');
+      const estilo = attr(filho(pPr, 'pStyle')) || estiloPadrao;
+      const fonteEstilo = doEstilo(estilo, 'rFonts') || doEstilo(estiloPadrao, 'rFonts') || 'Arial';
+      const szEstilo = Number(doEstilo(estilo, 'sz') || doEstilo(estiloPadrao, 'sz') || szPadrao) / 2;
+      const negritoEstilo = (doEstilo(estilo, 'b') ?? doEstilo(estiloPadrao, 'b')) === 'true';
+      const marca = filho(pPr, 'rPr');
+      const fonteMarca = attr(filho(marca, 'rFonts'), 'ascii') || fonteEstilo;
+      const szMarca = Number(attr(filho(marca, 'sz')) || szEstilo * 2) / 2;
+
+      const sp = filho(pPr, 'spacing');
+      const regra = attr(sp, 'lineRule') || 'auto';
+      const linha = Number(attr(sp, 'line') || 240);
+      const depois = Number(attr(sp, 'after') || 0) / 20;
+      const fator = regra === 'auto' ? linha / 240 : 1;
+
+      const runs = Array.from(p.children).flatMap((c) =>
+        c.localName === 'r' ? [c] : c.localName === 'hyperlink' ? Array.from(c.children).filter((r) => r.localName === 'r') : []
+      );
+      const spans = Array.from(el.querySelectorAll<HTMLElement>(':scope > span, :scope > a > span'));
+      const alinhados = runs.length === spans.length;
+      if (!alinhados && runs.some((r) => filho(filho(r, 'rPr'), 'spacing') || filho(filho(r, 'rPr'), 'w'))) {
+        console.warn('[docx tipografia] runs divergentes no parágrafo', idx, runs.length, spans.length);
+      }
+
+      let alturaTexto = 0;
+      runs.forEach((r, i) => {
+        const rPr = filho(r, 'rPr');
+        const fonte = attr(filho(rPr, 'rFonts'), 'ascii') || fonteEstilo;
+        const sz = Number(attr(filho(rPr, 'sz')) || szEstilo * 2) / 2;
+        const texto = Array.from(r.getElementsByTagNameNS(W, 't')).map((t) => t.textContent || '').join('');
+        if (texto) alturaTexto = Math.max(alturaTexto, sz * this.alturaLinha(fonte));
+        const span = alinhados ? spans[i] : undefined;
+        if (!span) return;
+        if (texto) {
+          span.style.fontFamily = `'${fonte}', sans-serif`;
+          span.style.fontSize = sz + 'pt';
+          span.style.fontWeight = (ligado(filho(rPr, 'b')) ?? negritoEstilo) ? '700' : '400';
+        }
+
+        let espacamento = Number(attr(filho(rPr, 'spacing')) || 0) / 20;
+        const escala = Number(attr(filho(rPr, 'w')) || 100) / 100;
+        const caracteres = Array.from(texto).length;
+        if (escala !== 1 && caracteres) {
+          espacamento += ((span.getBoundingClientRect().width * 0.75) * (escala - 1)) / caracteres;
+        }
+        if (espacamento) span.style.letterSpacing = espacamento.toFixed(3) + 'pt';
+        if (regra === 'auto') span.style.lineHeight = (fator * this.alturaLinha(fonte)).toFixed(4);
+      });
+
+      el.style.fontSize = szMarca + 'pt';
+      if (!alinhados) {
+        el.style.fontFamily = `'${fonteEstilo}', sans-serif`;
+        el.style.fontWeight = negritoEstilo ? '700' : '400';
+      }
+      if (regra === 'auto') {
+        el.style.lineHeight = (fator * this.alturaLinha(fonteMarca)).toFixed(4);
+        if (!alturaTexto) el.style.minHeight = (fator * szMarca * this.alturaLinha(fonteMarca)).toFixed(3) + 'pt';
+        if (alturaTexto && fator > 1) {
+          const deslocamento = ((fator - 1) * alturaTexto) / 2;
+          el.style.paddingTop = deslocamento.toFixed(3) + 'pt';
+          el.style.marginBottom = (depois - deslocamento).toFixed(3) + 'pt';
+        }
+      }
+    });
+
+    this.quebrarPaginaEntreSecoes(secao, body, W);
+  }
+
+  // O docx-preview junta seções "continuous" na mesma página; no Word a segunda começa
+  // numa página nova, abaixo da margem superior da própria seção.
+  private quebrarPaginaEntreSecoes(secao: HTMLElement, body: Element, W: string): void {
+    const artigos = Array.from(secao.querySelectorAll<HTMLElement>(':scope > article'));
+    const alturaPaginaPt = parseFloat(secao.style.minHeight);
+    if (artigos.length < 2 || !alturaPaginaPt) return;
+
+    const sectPrs = Array.from(body.getElementsByTagNameNS(W, 'sectPr'));
+    const topoSecao = secao.getBoundingClientRect().top;
+    const alturaPagina = alturaPaginaPt * (96 / 72);
+    artigos.slice(1).forEach((artigo, i) => {
+      const pgMar = sectPrs[i + 1]?.getElementsByTagNameNS(W, 'pgMar')[0];
+      const margemTopo = Number(pgMar?.getAttributeNS(W, 'top') || 1440) / 15;
+      const atual = artigo.getBoundingClientRect().top - topoSecao;
+      const desejado = alturaPagina * (i + 1) + margemTopo;
+      if (desejado > atual) artigo.style.marginTop = desejado - atual + 'px';
+      artigo.dataset['paginaInicio'] = String(alturaPagina * (i + 1));
+    });
   }
 
   private async desenharGruposFlutuantes(blob: Blob, host: HTMLElement): Promise<void> {
@@ -261,9 +437,14 @@ export class DiplomaComponent implements OnInit {
     const topoSecao = secao.getBoundingClientRect().top;
     secao.style.position = 'relative';
 
-    const fonte = renderizados.length
-      ? getComputedStyle(renderizados[renderizados.length - 1]).fontFamily
-      : 'Arial, sans-serif';
+    const stylesTxt = await zip.file('word/styles.xml')?.async('string');
+    const estiloNormal = stylesTxt
+      ? Array.from(parser.parseFromString(stylesTxt, 'application/xml').getElementsByTagNameNS(NS.w, 'style')).find(
+          (s) => s.getAttributeNS(NS.w, 'type') === 'paragraph' && s.getAttributeNS(NS.w, 'default') === '1'
+        )
+      : undefined;
+    const fonteNormal = estiloNormal?.getElementsByTagNameNS(NS.w, 'rFonts')[0]?.getAttributeNS(NS.w, 'ascii') || 'Arial';
+    const fonte = `'${fonteNormal}', sans-serif`;
 
     const criarParagrafo = (p: Element): HTMLElement => {
       const el = document.createElement('div');
@@ -275,11 +456,17 @@ export class DiplomaComponent implements OnInit {
       el.style.marginTop = Number(spW('before') || 0) / 15 + 'px';
       el.style.marginBottom = Number(spW('after') || 0) / 15 + 'px';
       const line = Number(spW('line') || 0);
-      el.style.lineHeight = line && (spW('lineRule') || 'auto') === 'auto' ? String((line / 240) * 1.15) : '1.15';
+      const regra = spW('lineRule') || 'auto';
+      const fator = line && regra === 'auto' ? line / 240 : 1;
+      const marca = pPr?.getElementsByTagNameNS(NS.w, 'rPr')[0];
+      const fonteMarca = marca?.getElementsByTagNameNS(NS.w, 'rFonts')[0]?.getAttributeNS(NS.w, 'ascii') || fonte;
+      if (line && regra !== 'auto') el.style.lineHeight = (line / 20) * (96 / 72) + 'px';
+      else el.style.lineHeight = (fator * this.alturaLinha(fonteMarca)).toFixed(4);
       const szMarca = pPr?.getElementsByTagNameNS(NS.w, 'sz')[0]?.getAttributeNS(NS.w, 'val');
       const szPrimeiro = p.getElementsByTagNameNS(NS.w, 'r')[0]?.getElementsByTagNameNS(NS.w, 'sz')[0]?.getAttributeNS(NS.w, 'val');
       const szBase = szMarca || szPrimeiro;
       if (szBase) el.style.fontSize = (Number(szBase) / 2) * (96 / 72) + 'px';
+      let alturaTexto = 0;
       el.style.paddingLeft = Number(ind?.getAttributeNS(NS.w, 'left') || 0) / 15 + 'px';
       el.style.paddingRight = Number(ind?.getAttributeNS(NS.w, 'right') || 0) / 15 + 'px';
       el.style.textIndent = Number(ind?.getAttributeNS(NS.w, 'firstLine') || 0) / 15 + 'px';
@@ -295,6 +482,12 @@ export class DiplomaComponent implements OnInit {
         span.style.whiteSpace = 'pre-wrap';
         const sz = rPr?.getElementsByTagNameNS(NS.w, 'sz')[0]?.getAttributeNS(NS.w, 'val');
         if (sz) span.style.fontSize = (Number(sz) / 2) * (96 / 72) + 'px';
+        const fonteRun = rPr?.getElementsByTagNameNS(NS.w, 'rFonts')[0]?.getAttributeNS(NS.w, 'ascii');
+        span.style.fontFamily = `'${fonteRun || fonteNormal}', sans-serif`;
+        const espacamento = Number(rPr?.getElementsByTagNameNS(NS.w, 'spacing')[0]?.getAttributeNS(NS.w, 'val') || 0) / 20;
+        if (espacamento) span.style.letterSpacing = espacamento + 'pt';
+        if (!line || regra === 'auto') span.style.lineHeight = (fator * this.alturaLinha(fonteRun || fonte)).toFixed(4);
+        if (t.trim()) alturaTexto = Math.max(alturaTexto, (Number(sz || szBase || 22) / 2) * (96 / 72) * this.alturaLinha(fonteRun || fonte));
         if (rPr?.getElementsByTagNameNS(NS.w, 'b').length) span.style.fontWeight = '700';
         if (rPr?.getElementsByTagNameNS(NS.w, 'i').length) span.style.fontStyle = 'italic';
         const cor = rPr?.getElementsByTagNameNS(NS.w, 'color')[0]?.getAttributeNS(NS.w, 'val');
@@ -303,7 +496,12 @@ export class DiplomaComponent implements OnInit {
         if (br) el.appendChild(document.createElement('br'));
         if (t.trim()) temTexto = true;
       });
-      if (!temTexto) el.style.minHeight = '1.15em';
+      if (!temTexto) el.style.minHeight = (line && regra !== 'auto' ? (line / 20) * (96 / 72) + 'px' : (fator * this.alturaLinha(fonteMarca)).toFixed(4) + 'em');
+      if (temTexto && fator > 1) {
+        const deslocamento = ((fator - 1) * alturaTexto) / 2;
+        el.style.paddingTop = deslocamento + 'px';
+        el.style.marginBottom = Number(spW('after') || 0) / 15 - deslocamento + 'px';
+      }
       return el;
     };
 
@@ -315,7 +513,7 @@ export class DiplomaComponent implements OnInit {
       const temGrupo = anc.getElementsByTagNameNS(NS.wpg, 'wgp').length > 0;
       const temCaixa = anc.getElementsByTagNameNS(NS.wps, 'txbx').length > 0;
       if (!temGrupo && !temCaixa) continue;
-      if (largura > 900) continue;
+      const atrasDoTexto = anc.getAttribute('behindDoc') === '1';
 
       const posH = anc.getElementsByTagNameNS(NS.wp, 'positionH')[0];
       const posV = anc.getElementsByTagNameNS(NS.wp, 'positionV')[0];
@@ -333,8 +531,9 @@ export class DiplomaComponent implements OnInit {
       const grupo = document.createElement('div');
       grupo.className = 'docx-grupo';
       grupo.style.cssText = 'position:absolute;box-sizing:border-box;color:#000;font-family:' + fonte + ';';
+      if (atrasDoTexto) grupo.style.zIndex = '-1';
       grupo.style.left = (posH?.getAttribute('relativeFrom') === 'page' ? offH : offH + 28) + 'px';
-      grupo.style.top = ref.getBoundingClientRect().top - topoSecao + offV + 'px';
+      grupo.style.top = (posV?.getAttribute('relativeFrom') === 'page' ? offV : ref.getBoundingClientRect().top - topoSecao + offV) + 'px';
       grupo.style.width = largura + 'px';
       grupo.style.height = altura + 'px';
 
@@ -425,6 +624,46 @@ export class DiplomaComponent implements OnInit {
     this.qrAlvo = alvo;
   }
 
+  async baixarPdfEstacio(): Promise<void> {
+    const host = this.docxHost?.nativeElement;
+    const paginas = Array.from(host?.querySelectorAll<HTMLElement>('.docx-pagina') ?? []);
+    if (!paginas.length || this.gerandoPdf) return;
+
+    this.gerandoPdf = true;
+    try {
+      const [{ jsPDF }, { toCanvas }] = await Promise.all([import('jspdf'), import('html-to-image')]);
+      await document.fonts.ready;
+      let pdf: InstanceType<typeof jsPDF> | null = null;
+
+      for (const pagina of paginas) {
+        const stage = pagina.querySelector<HTMLElement>('.docx-stage');
+        if (!stage) continue;
+        const largura = Number(pagina.style.getPropertyValue('--w'));
+        const altura = Number(pagina.style.getPropertyValue('--h'));
+        const canvas = await toCanvas(stage, {
+          width: largura,
+          height: altura,
+          pixelRatio: 3,
+          backgroundColor: '#ffffff',
+          skipFonts: true,
+          style: { transform: 'none', position: 'static' },
+        });
+
+        const formato: [number, number] = [largura * 0.75, altura * 0.75];
+        const orientacao = largura >= altura ? 'landscape' : 'portrait';
+        if (!pdf) pdf = new jsPDF({ orientation: orientacao, unit: 'pt', format: formato, compress: true });
+        else pdf.addPage(formato, orientacao);
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, formato[0], formato[1], undefined, 'FAST');
+      }
+
+      pdf?.save(`diploma-${this.publicacaoEstacio.pub_id}.pdf`);
+    } catch (e) {
+      console.error('[pdf] falha ao gerar', e);
+    } finally {
+      this.gerandoPdf = false;
+    }
+  }
+
   baixarXmlEstacio(): void {
     const d = this.publicacaoEstacio;
     if (!d) return;
@@ -433,10 +672,14 @@ export class DiplomaComponent implements OnInit {
     const campos: [string, unknown][] = [
       ['CodigoValidacao', d.pub_id], ['Protocolo', d.protocolo], ['Status', d.ativo ? 'Ativo' : 'Cancelado'],
       ['Nome', d.nome], ['CPF', d.cpf], ['DataNascimento', d.nascimento], ['Nacionalidade', d.nacionalidade],
-      ['Naturalidade', d.municipio], ['RG', d.rg], ['OrgaoExpedidor', d.orgao_expedidor],
+      ['Naturalidade', d.naturalidade], ['RG', d.rg], ['OrgaoExpedidor', d.orgao_expedidor],
       ['NomeMae', d.nome_mae], ['NomePai', d.nome_pai],
-      ['Curso', d.curso], ['Modalidade', d.modalidade], ['AnoConclusao', d.ano_conclusao],
+      ['Curso', d.curso], ['Modalidade', d.modalidade], ['ReconhecimentoCurso', d.curso_reconhecimento],
+      ['AnoConclusao', d.ano_conclusao],
       ['DataConclusao', d.data], ['DataColacaoGrau', d.data_colacao], ['Reitor', d.reitor],
+      ['LocalExpedicao', d.cidade_expedicao], ['DataExpedicao', d.data_expedicao],
+      ['NumeroRegistro', d.registro_numero], ['LivroRegistro', d.registro_livro], ['FolhaRegistro', d.registro_folha],
+      ['DataRegistro', d.registro_data], ['ProcessoRegistro', d.registro_processo],
       ['Instituicao', d.instituicao], ['INEP', d.inep], ['Endereco', d.endereco], ['Bairro', d.bairro], ['CEP', d.cep],
       ['Observacao', d.observacao],
     ];
@@ -451,6 +694,15 @@ export class DiplomaComponent implements OnInit {
     a.download = `diploma-${d.pub_id}.xml`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  dataPorExtenso(valor: string): string {
+    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const br = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(valor ?? '');
+    const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(valor ?? '');
+    const [dia, mes, ano] = br ? [br[1], br[2], br[3]] : iso ? [iso[3], iso[2], iso[1]] : [];
+    if (!dia || !meses[Number(mes) - 1]) return valor;
+    return `${Number(dia)} de ${meses[Number(mes) - 1]} de ${ano}`;
   }
 
   openEstacio(i: number): void {
