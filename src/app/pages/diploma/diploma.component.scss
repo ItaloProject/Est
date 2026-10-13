@@ -62,84 +62,115 @@
   }
 }
 
-.diploma-mapy {
-  background:
-    repeating-linear-gradient(
-      45deg,
-      #b0b0b0 0px, #b0b0b0 2px,
-      transparent 2px, transparent 8px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      #b0b0b0 0px, #b0b0b0 2px,
-      transparent 2px, transparent 8px
-    ),
-    #c8c8c8;
-  padding: 18px;
-  border-radius: 2px;
+.diploma-estacio {
+  position: relative;
+  background: #fff;
+  border: 5px solid #1a3d7c;
+  box-shadow: inset 0 0 0 8px #fff, inset 0 0 0 12px #1a3d7c;
+  padding: calc(2.5rem + 12px) calc(3rem + 12px);
 
-  &__inner {
+  // Corner notch decorations
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
     background: #fff;
-    padding: 2.5rem 3rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 420px;
+    border: 2px solid #1a3d7c;
+    z-index: 1;
   }
+  &::before { top: 4px; left: 4px; }
+  &::after  { top: 4px; right: 4px; }
 
-  &__cabecalho {
+  &__gov {
     text-align: center;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     color: #222;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+
+  &__ies {
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0.75rem 0 1.25rem;
+    line-height: 1.3;
+    text-transform: uppercase;
   }
 
   &__texto {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: #222;
-    text-align: justify;
-    line-height: 1.8;
-    margin: 1.25rem 0 0.5rem;
+    text-align: center;
+    line-height: 1.9;
+    margin: 0 0 0.75rem;
+
+    em { font-style: italic; }
 
     strong {
       font-style: normal;
       text-transform: uppercase;
+      font-weight: 700;
     }
   }
 
   &__local {
-    text-align: right;
-    font-size: 0.82rem;
+    text-align: center;
+    font-size: 0.85rem;
     color: #222;
-    margin-top: 0.5rem;
+    font-style: italic;
+    margin-top: 1rem;
   }
 
-  &__assinaturas {
+  &__rodape {
     display: flex;
     justify-content: space-between;
-    margin-top: 2.5rem;
-    padding: 0 1rem;
+    align-items: flex-end;
+    margin-top: 2rem;
+    padding: 0 0.5rem;
   }
 
-  &__ass-item {
+  &__logo {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 6px;
-    min-width: 160px;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a3d7c;
+  }
 
-    span {
-      font-size: 0.75rem;
-      color: #444;
+  &__ass {
+    text-align: center;
+    min-width: 170px;
+
+    p {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #333;
+      font-weight: 700;
+      margin: 4px 0 0;
     }
   }
 
   &__ass-linha {
-    width: 100%;
     border-top: 1px solid #555;
+    margin-bottom: 4px;
+  }
+
+  &__validacao {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 0.6rem;
+    color: #666;
+    letter-spacing: 0.02em;
+
+    p { margin: 2px 0; }
   }
 }
 

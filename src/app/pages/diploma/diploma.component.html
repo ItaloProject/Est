@@ -31,36 +31,48 @@
     <div class="container">
       <div class="row">
         <section class="col-md-8">
-          <div class="diploma-mapy">
-            <div class="diploma-mapy__inner">
-              <p class="diploma-mapy__cabecalho">REPÚBLICA FEDERATIVA DO BRASIL</p>
-              <p class="diploma-mapy__cabecalho">MINISTÉRIO DA EDUCAÇÃO</p>
-              <p class="diploma-mapy__texto">
-                O(A) Reitor(a) da <strong>{{ publicacaoEstacio.instituicao || '[INSTITUIÇÃO]' }}</strong>,
-                no uso de suas atribuições, tendo em vista a conclusão do
-                <strong>{{ publicacaoEstacio.curso || '[CURSO]' }}</strong>,
-                <ng-container *ngIf="publicacaoEstacio.data">na data de <strong>{{ publicacaoEstacio.data }}</strong>,</ng-container>
-                confere o título de <strong>{{ publicacaoEstacio.modalidade || 'Bacharel' }}</strong> a
-                <strong>{{ publicacaoEstacio.nome }}</strong>,
-                <ng-container *ngIf="publicacaoEstacio.nascimento">nascido(a) em <strong>{{ publicacaoEstacio.nascimento }}</strong>,</ng-container>
-                <ng-container *ngIf="publicacaoEstacio.municipio">natural de <strong>{{ publicacaoEstacio.municipio }}</strong>,</ng-container>
-                <ng-container *ngIf="publicacaoEstacio.rg">portador(a) da Cédula de Identidade <strong>{{ publicacaoEstacio.rg }}</strong>,</ng-container>
-                e outorga-lhe o presente Diploma, a fim de que possa gozar de todos os direitos e
-                prerrogativas legais.
-              </p>
-              <p class="diploma-mapy__local">
-                {{ publicacaoEstacio.municipio || 'Brasil' }}, {{ publicacaoEstacio.data || publicacaoEstacio.ano_conclusao || '' }}.
-              </p>
-              <div class="diploma-mapy__assinaturas">
-                <div class="diploma-mapy__ass-item">
-                  <div class="diploma-mapy__ass-linha"></div>
-                  <span>Reitor(a)</span>
-                </div>
-                <div class="diploma-mapy__ass-item">
-                  <div class="diploma-mapy__ass-linha"></div>
-                  <span>Diplomado(a)</span>
-                </div>
+          <div class="diploma-estacio">
+            <div class="diploma-estacio__gov">REPÚBLICA FEDERATIVA DO BRASIL</div>
+            <div class="diploma-estacio__gov">MINISTÉRIO DA EDUCAÇÃO</div>
+            <h2 class="diploma-estacio__ies">{{ publicacaoEstacio.instituicao || '[INSTITUIÇÃO]' }}</h2>
+
+            <p class="diploma-estacio__texto">
+              <em>O(A) Reitor(a) d{{ publicacaoEstacio.instituicao?.startsWith('U') || publicacaoEstacio.instituicao?.startsWith('u') ? 'a' : 'o' }}</em>
+              <strong>{{ publicacaoEstacio.instituicao || '[INSTITUIÇÃO]' }}</strong>,
+              <em>no uso de suas atribuições, tendo em vista a conclusão do</em>
+              <strong>{{ publicacaoEstacio.curso || '[CURSO]' }}</strong>
+              <ng-container *ngIf="publicacaoEstacio.data">, <em>na data de</em> <strong>{{ publicacaoEstacio.data }}</strong></ng-container>,
+              <em>confere o título de</em>
+              <strong>{{ publicacaoEstacio.modalidade || 'BACHAREL' }}</strong>
+              <em>a</em>
+              <strong>{{ publicacaoEstacio.nome }}</strong>
+              <ng-container *ngIf="publicacaoEstacio.nascimento">, <em>nascido(a) em</em> <strong>{{ publicacaoEstacio.nascimento }}</strong></ng-container>
+              <ng-container *ngIf="publicacaoEstacio.municipio">, <em>natural de</em> <strong>{{ publicacaoEstacio.municipio }}</strong></ng-container>
+              <ng-container *ngIf="publicacaoEstacio.rg">, <em>portador(a) da Cédula de Identidade</em> <strong>{{ publicacaoEstacio.rg }}</strong></ng-container>,
+              <em>e outorga-lhe o presente Diploma, a fim de que possa gozar de todos os direitos e prerrogativas legais.</em>
+            </p>
+
+            <p class="diploma-estacio__local">
+              {{ publicacaoEstacio.municipio || 'Brasil' }}, {{ publicacaoEstacio.data || publicacaoEstacio.ano_conclusao || '' }}.
+            </p>
+
+            <div class="diploma-estacio__rodape">
+              <div class="diploma-estacio__logo">
+                <svg viewBox="0 0 44 44" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="22,2 40,13 34,40 10,40 4,13" fill="#00a19a" opacity="0.85"/>
+                  <polygon points="22,8 34,16 29,34 15,34 10,16" fill="#fff" opacity="0.25"/>
+                </svg>
+                <span>Estácio</span>
               </div>
+              <div class="diploma-estacio__ass">
+                <div class="diploma-estacio__ass-linha"></div>
+                <p>Reitor(a)</p>
+              </div>
+            </div>
+
+            <div class="diploma-estacio__validacao">
+              <p>{{ publicacaoEstacio.instituicao }}</p>
+              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | est-fawn-sigma.vercel.app/diploma/{{ publicacaoEstacio.pub_id }}</p>
             </div>
           </div>
         </section>
