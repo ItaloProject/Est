@@ -96,10 +96,14 @@
         </section>
         <section class="col-md-4">
           <div class="row pdf-buttons">
-            <div *ngIf="publicacaoEstacio.docx_url" class="col-sm-12 btn-downloads">
-              <a class="btn btn-orange" [href]="publicacaoEstacio.docx_url" download target="_blank" rel="noopener">
-                Baixar Diploma (.docx)
-              </a>
+            <div class="col-sm-12 btn-downloads">
+              <button type="button" class="btn btn-orange" (click)="baixarXmlEstacio()">Baixar XML</button>
+              <a *ngIf="publicacaoEstacio.docx_url" class="btn btn-orange"
+                 [href]="publicacaoEstacio.docx_url + '?download=diploma-' + publicacaoEstacio.pub_id + '.docx'"
+                 rel="noopener">Baixar RVDD</a>
+            </div>
+            <div class="col-sm-12">
+              <a class="btn btn-validar" [routerLink]="['/conformidade']">Portal de conformidade do XML</a>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>

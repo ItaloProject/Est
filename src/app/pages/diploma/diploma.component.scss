@@ -279,7 +279,16 @@
 
   &__host {
     width: 100%;
-    overflow: hidden;
+    height: 850px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    border: 0.063rem solid #ededed;
+    background: #fff;
+
+    @media (max-width: 767px) {
+      height: 500px;
+    }
 
     ::ng-deep .docx-pagina {
       position: relative;
