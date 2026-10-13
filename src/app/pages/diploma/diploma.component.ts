@@ -108,13 +108,85 @@ export class DiplomaComponent implements OnInit {
   @HostListener('window:resize')
   ajustarEscalaDocx(): void {
     const host = this.docxHost?.nativeElement;
-    const wrapper = host?.querySelector<HTMLElement>('.docx-wrapper');
-    const pagina = wrapper?.querySelector<HTMLElement>('section.docx');
-    if (!host || !wrapper || !pagina) return;
-    wrapper.style.zoom = '1';
-    const larguraPagina = pagina.offsetWidth;
-    const larguraHost = host.clientWidth;
-    wrapper.style.zoom = larguraPagina > larguraHost ? String(larguraHost / larguraPagina) : '1';
+    const pagina = host?.querySelector<HTMLElement>('.docx-pagina');
+    if (!host || !pagina) return;
+    const larguraDoc = Number(pagina.dataset['w']) || 1;
+    host.style.setProperty('--s', String(Math.min(1, host.clientWidth / larguraDoc)));
+  }
+
+  private montarPaginas(host: HTMLElement): void {
+    const wrapper = host.querySelector<HTMLElement>('.docx-wrapper');
+    const secoes = Array.from(host.querySelectorAll<HTMLElement>('section.docx'));
+    if (!wrapper || !secoes.length) return;
+
+    const larg = secoes[0].offsetWidth;
+    const alturaMoldura = larg * (590 / 903);
+    const paginas: { src: HTMLElement; topo: number; altura: number; clip: number; frente: boolean }[] = [];
+
+    if (secoes.length === 1) {
+      const sec = secoes[0];
+      const topoSec = sec.getBoundingClientRect().top;
+      const ps = Array.from(sec.querySelectorAll<HTMLElement>('p'));
+      let idxVal = -1;
+      ps.forEach((p, i) => { if ((p.textContent || '').includes('Código de Validação')) idxVal = i; });
+      const prox = idxVal >= 0
+        ? ps.slice(idxVal + 1).find((p) => (p.textContent || '').trim().length > 0)
+        : undefined;
+
+      if (idxVal >= 0 && prox) {
+        const fimFrente = ps[idxVal].getBoundingClientRect().bottom - topoSec;
+        const inicioVerso = prox.getBoundingClientRect().top - topoSec;
+        const anterior = idxVal > 0 ? ps[idxVal - 1] : undefined;
+        const temRodape = !!anterior && (anterior.textContent || '').trim().length > 0;
+        const topoRodape = (temRodape ? anterior!.getBoundingClientRect().top : ps[idxVal].getBoundingClientRect().top) - topoSec;
+        const alturaIdeal = topoRodape / 0.86;
+        const alturaFrente = Math.max(fimFrente + 25, Math.min(alturaMoldura, Math.max(alturaMoldura * 0.85, alturaIdeal)));
+        paginas.push({ src: sec, topo: 0, altura: alturaFrente, clip: Math.min(alturaFrente, inicioVerso - 4), frente: true });
+        const topoVerso = Math.max(0, inicioVerso - 12);
+        paginas.push({ src: sec, topo: topoVerso, altura: sec.offsetHeight - topoVerso, clip: sec.offsetHeight - topoVerso, frente: false });
+      } else {
+        paginas.push({ src: sec, topo: 0, altura: Math.max(alturaMoldura, sec.offsetHeight), clip: sec.offsetHeight, frente: true });
+      }
+    } else {
+      secoes.forEach((sec, i) => {
+        paginas.push({ src: sec, topo: 0, altura: sec.offsetHeight, clip: sec.offsetHeight, frente: i === 0 });
+      });
+    }
+
+    const novas = paginas.map((cfg) => {
+      const pagina = document.createElement('div');
+      pagina.className = 'docx-pagina' + (cfg.frente ? ' docx-pagina--frente' : '');
+      pagina.dataset['w'] = String(larg);
+      pagina.style.setProperty('--w', String(larg));
+      pagina.style.setProperty('--h', String(cfg.altura));
+
+      const stage = document.createElement('div');
+      stage.className = 'docx-stage';
+      stage.style.width = larg + 'px';
+      stage.style.height = cfg.altura + 'px';
+
+      const clip = document.createElement('div');
+      clip.className = 'docx-clip';
+      clip.style.height = cfg.clip + 'px';
+
+      const wr = document.createElement('div');
+      wr.className = 'docx-wrapper';
+
+      const clone = cfg.src.cloneNode(true) as HTMLElement;
+      clone.style.setProperty('margin', '0', 'important');
+      clone.style.setProperty('margin-top', -cfg.topo + 'px', 'important');
+      clone.style.setProperty('background', 'transparent', 'important');
+      clone.style.setProperty('box-shadow', 'none', 'important');
+
+      wr.appendChild(clone);
+      clip.appendChild(wr);
+      stage.appendChild(clip);
+      pagina.appendChild(stage);
+      return pagina;
+    });
+
+    wrapper.remove();
+    novas.forEach((n) => host.appendChild(n));
   }
 
   private async renderizarDocx(): Promise<void> {
@@ -137,6 +209,7 @@ export class DiplomaComponent implements OnInit {
         ignoreLastRenderedPageBreak: false,
       });
       await this.aplicarQrDinamico(host);
+      this.montarPaginas(host);
       this.docxCarregando = false;
       this.ajustarEscalaDocx();
     } catch (e) {

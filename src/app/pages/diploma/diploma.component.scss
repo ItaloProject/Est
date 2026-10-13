@@ -281,17 +281,38 @@
     width: 100%;
     overflow: hidden;
 
+    ::ng-deep .docx-pagina {
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto 1rem;
+      background-color: #fff;
+      width: calc(var(--w) * 1px * var(--s, 1));
+      height: calc(var(--h) * 1px * var(--s, 1));
+    }
+
+    ::ng-deep .docx-pagina--frente {
+      background-image: url('/assets/images/diploma-estacio-frente.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+    }
+
+    ::ng-deep .docx-stage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: 0 0;
+      transform: scale(var(--s, 1));
+    }
+
+    ::ng-deep .docx-clip {
+      overflow: hidden;
+      width: 100%;
+    }
+
     ::ng-deep .docx-wrapper {
       background: transparent !important;
       padding: 0 !important;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    ::ng-deep section.docx {
-      margin: 0 0 1rem !important;
-      box-shadow: 0 0 0 0.063rem #ededed;
+      display: block !important;
     }
   }
 }
