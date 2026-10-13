@@ -4,20 +4,24 @@
   <div class="container">
     <div class="header">
       <div class="row">
-        <div class="col-md-3">
+        <div class="col-md-7">
           <h1>{{ publicacaoEstacio.nome }}</h1>
-          <p><b>CPF: </b>{{ publicacaoEstacio.cpf }}</p>
-          <p><b>Data de Nascimento: </b>{{ publicacaoEstacio.nascimento }}</p>
         </div>
-        <div class="col-md-3 offset-md-1 col-lg-3 second-block">
-          <p *ngIf="publicacaoEstacio.municipio"><b>Naturalidade: </b>{{ publicacaoEstacio.municipio }}</p>
-          <p *ngIf="publicacaoEstacio.rg"><b>RG: </b>{{ publicacaoEstacio.rg }}</p>
-          <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
-        </div>
-        <div class="col-md-5 col-lg-6 btn-status-container">
+        <div class="col-md-5 btn-status-container">
           <button [ngClass]="publicacaoEstacio.ativo ? 'ativo' : 'inativo'">
             Status do diploma: <b>{{ publicacaoEstacio.ativo ? 'Ativo' : 'Cancelado' }}</b>
           </button>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 0.25rem;">
+        <div class="col-md-4">
+          <p><b>CPF: </b>{{ publicacaoEstacio.cpf }}</p>
+          <p><b>Data de Nascimento: </b>{{ publicacaoEstacio.nascimento }}</p>
+        </div>
+        <div class="col-md-4">
+          <p *ngIf="publicacaoEstacio.municipio"><b>Naturalidade: </b>{{ publicacaoEstacio.municipio }}</p>
+          <p *ngIf="publicacaoEstacio.rg"><b>RG: </b>{{ publicacaoEstacio.rg }}</p>
+          <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
         </div>
       </div>
     </div>
@@ -27,7 +31,38 @@
     <div class="container">
       <div class="row">
         <section class="col-md-8">
-          <img src="assets/images/diploma-frente.png" class="img-fluid w-100" alt="diploma" />
+          <div class="diploma-mapy">
+            <div class="diploma-mapy__inner">
+              <p class="diploma-mapy__cabecalho">REPÚBLICA FEDERATIVA DO BRASIL</p>
+              <p class="diploma-mapy__cabecalho">MINISTÉRIO DA EDUCAÇÃO</p>
+              <p class="diploma-mapy__texto">
+                O(A) Reitor(a) da <strong>{{ publicacaoEstacio.instituicao || '[INSTITUIÇÃO]' }}</strong>,
+                no uso de suas atribuições, tendo em vista a conclusão do
+                <strong>{{ publicacaoEstacio.curso || '[CURSO]' }}</strong>,
+                <ng-container *ngIf="publicacaoEstacio.data">na data de <strong>{{ publicacaoEstacio.data }}</strong>,</ng-container>
+                confere o título de <strong>{{ publicacaoEstacio.modalidade || 'Bacharel' }}</strong> a
+                <strong>{{ publicacaoEstacio.nome }}</strong>,
+                <ng-container *ngIf="publicacaoEstacio.nascimento">nascido(a) em <strong>{{ publicacaoEstacio.nascimento }}</strong>,</ng-container>
+                <ng-container *ngIf="publicacaoEstacio.municipio">natural de <strong>{{ publicacaoEstacio.municipio }}</strong>,</ng-container>
+                <ng-container *ngIf="publicacaoEstacio.rg">portador(a) da Cédula de Identidade <strong>{{ publicacaoEstacio.rg }}</strong>,</ng-container>
+                e outorga-lhe o presente Diploma, a fim de que possa gozar de todos os direitos e
+                prerrogativas legais.
+              </p>
+              <p class="diploma-mapy__local">
+                {{ publicacaoEstacio.municipio || 'Brasil' }}, {{ publicacaoEstacio.data || publicacaoEstacio.ano_conclusao || '' }}.
+              </p>
+              <div class="diploma-mapy__assinaturas">
+                <div class="diploma-mapy__ass-item">
+                  <div class="diploma-mapy__ass-linha"></div>
+                  <span>Reitor(a)</span>
+                </div>
+                <div class="diploma-mapy__ass-item">
+                  <div class="diploma-mapy__ass-linha"></div>
+                  <span>Diplomado(a)</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
         <section class="col-md-4">
           <div class="row pdf-buttons">

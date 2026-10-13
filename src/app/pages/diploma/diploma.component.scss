@@ -62,6 +62,87 @@
   }
 }
 
+.diploma-mapy {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #b0b0b0 0px, #b0b0b0 2px,
+      transparent 2px, transparent 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      #b0b0b0 0px, #b0b0b0 2px,
+      transparent 2px, transparent 8px
+    ),
+    #c8c8c8;
+  padding: 18px;
+  border-radius: 2px;
+
+  &__inner {
+    background: #fff;
+    padding: 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 420px;
+  }
+
+  &__cabecalho {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #222;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__texto {
+    font-size: 0.85rem;
+    color: #222;
+    text-align: justify;
+    line-height: 1.8;
+    margin: 1.25rem 0 0.5rem;
+
+    strong {
+      font-style: normal;
+      text-transform: uppercase;
+    }
+  }
+
+  &__local {
+    text-align: right;
+    font-size: 0.82rem;
+    color: #222;
+    margin-top: 0.5rem;
+  }
+
+  &__assinaturas {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2.5rem;
+    padding: 0 1rem;
+  }
+
+  &__ass-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 160px;
+
+    span {
+      font-size: 0.75rem;
+      color: #444;
+    }
+  }
+
+  &__ass-linha {
+    width: 100%;
+    border-top: 1px solid #555;
+  }
+}
+
 .dados-estacio-panel {
   background-color: #f5f5f5;
   border: 0.063rem solid #d1d1d1;
