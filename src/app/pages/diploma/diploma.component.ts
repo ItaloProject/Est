@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { XMLParser } from 'fast-xml-parser';
 import { BuscaService } from '../../services/busca.service';
 import { DadosCurso, DadosIES, DadosRegistro } from '../../models/dados.models';
@@ -12,10 +13,13 @@ import { DadosCurso, DadosIES, DadosRegistro } from '../../models/dados.models';
   styleUrls: ['./diploma.component.scss'],
 })
 export class DiplomaComponent implements OnInit {
+  @ViewChild('docxContainer') docxContainer: ElementRef<HTMLDivElement>;
+
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private _busca = inject(BuscaService);
   private domSanitizer = inject(DomSanitizer);
+  private httpClient = inject(HttpClient);
 
   user: any;
   pdf: string;
@@ -31,6 +35,8 @@ export class DiplomaComponent implements OnInit {
 
   publicacaoEstacio: any = null;
   dadosEstacioOpen = [false, false, false];
+  abaAtiva: 'diploma' | 'novo' = 'diploma';
+  carregandoDocx = false;
   private readonly MAPY_ID_RE = /^[0-9a-f]{10}$/i;
 
   ngOnInit(): void {
@@ -104,6 +110,77 @@ export class DiplomaComponent implements OnInit {
       this.dadosEstacioOpen = [false, false, false];
       this.dadosEstacioOpen[i] = true;
     }
+  }
+
+  async mudarAba(aba: 'diploma' | 'novo'): Promise<void> {
+    this.abaAtiva = aba;
+    if (aba === 'novo') {
+      await this.renderizarDocx();
+    }
+  }
+
+  private async renderizarDocx(): Promise<void> {
+    this.carregandoDocx = true;
+    try {
+      const [{ default: PizZip }, { default: Docxtemplater }, { renderAsync }] = await Promise.all([
+        import('pizzip'),
+        import('docxtemplater'),
+        import('docx-preview'),
+      ]);
+
+      const buffer = await this.httpClient
+        .get('assets/templates/CGB.docx', { responseType: 'arraybuffer' })
+        .toPromise();
+
+      const zip = new PizZip(buffer);
+      const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+      doc.render(this.buildTemplateData());
+
+      const out = doc.getZip().generate({ type: 'arraybuffer' });
+      const blob = new Blob([out], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+
+      const container = this.docxContainer?.nativeElement;
+      if (container) {
+        container.innerHTML = '';
+        await renderAsync(blob, container);
+      }
+    } catch (err) {
+      console.error('Erro ao renderizar docx:', err);
+    } finally {
+      this.carregandoDocx = false;
+    }
+  }
+
+  private buildTemplateData(): Record<string, string> {
+    const p = this.publicacaoEstacio || {};
+    return {
+      nome: p.nome ?? '',
+      cpf: p.cpf ?? '',
+      nascimento: p.nascimento ?? '',
+      municipio: p.municipio ?? '',
+      rg: p.rg ?? '',
+      orgao_expedidor: p.orgao_expedidor ?? '',
+      nome_mae: p.nome_mae ?? '',
+      nacionalidade: p.nacionalidade ?? '',
+      curso: p.curso ?? '',
+      modalidade: p.modalidade ?? '',
+      ano_conclusao: p.ano_conclusao ?? '',
+      data: p.data ?? '',
+      data_colacao: p.data_colacao ?? '',
+      instituicao: p.instituicao ?? '',
+      inep: p.inep ?? '',
+      endereco: p.endereco ?? '',
+      bairro: p.bairro ?? '',
+      cep: p.cep ?? '',
+      protocolo: p.protocolo ?? '',
+      reitor: p.reitor ?? '',
+      status: p.status ?? '',
+      observacao: p.observacao ?? '',
+      pub_id: p.pub_id ?? '',
+    };
   }
 
   ajeitarPdfXml(): void {

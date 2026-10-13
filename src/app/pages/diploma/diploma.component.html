@@ -24,10 +24,23 @@
           <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="nav nav-tabs abas-diploma">
+            <li class="nav-item">
+              <button class="nav-link" [class.active]="abaAtiva === 'diploma'" (click)="mudarAba('diploma')">Diploma</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" [class.active]="abaAtiva === 'novo'" (click)="mudarAba('novo')">Novo</button>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 
-  <section class="section-pesquisa">
+  <section class="section-pesquisa" *ngIf="abaAtiva === 'diploma'">
     <div class="container">
       <div class="row">
         <section class="col-md-8">
@@ -103,6 +116,19 @@
             </div>
           </div>
         </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-pesquisa section-docx" *ngIf="abaAtiva === 'novo'">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div *ngIf="carregandoDocx" class="docx-carregando">
+            <p>Carregando documento...</p>
+          </div>
+          <div #docxContainer class="docx-container"></div>
+        </div>
       </div>
     </div>
   </section>
