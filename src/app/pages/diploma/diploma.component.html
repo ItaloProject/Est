@@ -89,6 +89,11 @@
         </section>
         <section class="col-md-4">
           <div class="row pdf-buttons">
+            <div *ngIf="publicacaoEstacio.docx_url" class="col-sm-12 btn-downloads">
+              <a class="btn btn-orange" [href]="publicacaoEstacio.docx_url" download target="_blank" rel="noopener">
+                Baixar Diploma (.docx)
+              </a>
+            </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>
               <div *ngIf="dadosEstacioOpen[0]" class="dados-estacio-panel">
