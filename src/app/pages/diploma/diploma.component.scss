@@ -267,3 +267,31 @@
     }
   }
 }
+
+.docx-viewer {
+  width: 100%;
+
+  &__loading {
+    text-align: center;
+    color: #555;
+    padding: 2rem 0;
+  }
+
+  &__host {
+    width: 100%;
+    overflow: hidden;
+
+    ::ng-deep .docx-wrapper {
+      background: transparent !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    ::ng-deep section.docx {
+      margin: 0 0 1rem !important;
+      box-shadow: 0 0 0 0.063rem #ededed;
+    }
+  }
+}

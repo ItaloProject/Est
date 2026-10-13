@@ -31,6 +31,12 @@
     <div class="container">
       <div class="row">
         <section class="col-md-8">
+          <div *ngIf="publicacaoEstacio.docx_url && !docxErro" class="docx-viewer">
+            <p *ngIf="docxCarregando" class="docx-viewer__loading">Carregando diploma…</p>
+            <div #docxHost class="docx-viewer__host"></div>
+          </div>
+
+          <ng-container *ngIf="!publicacaoEstacio.docx_url || docxErro">
           <!-- Página 1 — Frente -->
           <div class="diploma-estacio">
             <div class="diploma-estacio__cabecalho">
@@ -86,6 +92,7 @@
               <p class="diploma-verso__numero">{{ publicacaoEstacio.protocolo || publicacaoEstacio.pub_id }}</p>
             </div>
           </div>
+          </ng-container>
         </section>
         <section class="col-md-4">
           <div class="row pdf-buttons">

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { XMLParser } from 'fast-xml-parser';
@@ -32,6 +32,9 @@ export class DiplomaComponent implements OnInit {
 
   publicacaoEstacio: any = null;
   dadosEstacioOpen = [false, false, false];
+  docxErro = false;
+  docxCarregando = false;
+  @ViewChild('docxHost') docxHost?: ElementRef<HTMLDivElement>;
   private readonly MAPY_ID_RE = /^[0-9a-f]{10}$/i;
 
   ngOnInit(): void {
@@ -49,6 +52,10 @@ export class DiplomaComponent implements OnInit {
         next: (rows) => {
           if (rows?.length) {
             this.publicacaoEstacio = rows[0];
+            if (this.publicacaoEstacio.docx_url) {
+              this.docxCarregando = true;
+              setTimeout(() => this.renderizarDocx(), 0);
+            }
           } else {
             this.router.navigate(['']);
           }
@@ -96,6 +103,69 @@ export class DiplomaComponent implements OnInit {
       this.dadosDiplomaOpen = [false, false, false];
       this.dadosDiplomaOpen[i] = true;
     }
+  }
+
+  @HostListener('window:resize')
+  ajustarEscalaDocx(): void {
+    const host = this.docxHost?.nativeElement;
+    const wrapper = host?.querySelector<HTMLElement>('.docx-wrapper');
+    const pagina = wrapper?.querySelector<HTMLElement>('section.docx');
+    if (!host || !wrapper || !pagina) return;
+    wrapper.style.zoom = '1';
+    const larguraPagina = pagina.offsetWidth;
+    const larguraHost = host.clientWidth;
+    wrapper.style.zoom = larguraPagina > larguraHost ? String(larguraHost / larguraPagina) : '1';
+  }
+
+  private async renderizarDocx(): Promise<void> {
+    const host = this.docxHost?.nativeElement;
+    if (!host) {
+      this.docxCarregando = false;
+      this.docxErro = true;
+      return;
+    }
+    try {
+      const resp = await fetch(this.publicacaoEstacio.docx_url, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const blob = await resp.blob();
+      const { renderAsync } = await import('docx-preview');
+      host.innerHTML = '';
+      await renderAsync(blob, host, undefined, {
+        className: 'docx',
+        inWrapper: true,
+        breakPages: true,
+        ignoreLastRenderedPageBreak: false,
+      });
+      await this.aplicarQrDinamico(host);
+      this.docxCarregando = false;
+      this.ajustarEscalaDocx();
+    } catch (e) {
+      console.error('[docx render]', e);
+      this.docxCarregando = false;
+      this.docxErro = true;
+    }
+  }
+
+  private async aplicarQrDinamico(host: HTMLElement): Promise<void> {
+    const paginas = host.querySelectorAll<HTMLElement>('section.docx');
+    const ultima = paginas[paginas.length - 1];
+    if (!ultima) return;
+    const numero = String(this.publicacaoEstacio.protocolo || this.publicacaoEstacio.pub_id || '');
+    const folhas = Array.from(ultima.querySelectorAll<HTMLElement>('p, span'));
+    const noNumero = folhas.reverse().find((el) => /^\d{10,}$/.test((el.textContent || '').trim()) && el.children.length === 0);
+    if (noNumero && numero) noNumero.textContent = numero;
+    const imgs = Array.from(ultima.querySelectorAll<HTMLImageElement>('img'));
+    const candidatas = imgs.filter((img) => {
+      const w = parseFloat(img.style.width) || img.width;
+      const h = parseFloat(img.style.height) || img.height;
+      return w > 40 && h > 40 && Math.abs(w - h) / Math.max(w, h) < 0.15;
+    });
+    const alvo = candidatas.sort((a, b) => b.width * b.height - a.width * a.height)[0];
+    if (!alvo) return;
+    const QRCode = (await import('qrcode')).default;
+    const url = 'https://est-fawn-sigma.vercel.app/diploma/' + this.publicacaoEstacio.pub_id;
+    alvo.src = await QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 1, width: 512 });
+    alvo.removeAttribute('srcset');
   }
 
   openEstacio(i: number): void {
