@@ -75,7 +75,8 @@ export class LoginComponent implements OnInit {
       this.http.get<AcessoOnline[]>(url).subscribe({
         next: (lista) => resolve(Array.isArray(lista) ? lista : []),
         error: (err) => {
-          if (err?.status === 404) resolve([]);
+          const status = err?.status;
+          if (status === 400 || status === 404) resolve([]);
           else reject(err);
         },
       });
