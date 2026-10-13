@@ -10,6 +10,7 @@ import { DadosCurso, DadosIES, DadosRegistro } from '../../models/dados.models';
   standalone: false,
   templateUrl: './diploma.component.html',
   styleUrls: ['./diploma.component.scss'],
+  preserveWhitespaces: true,
 })
 export class DiplomaComponent implements OnInit {
   private router = inject(Router);
