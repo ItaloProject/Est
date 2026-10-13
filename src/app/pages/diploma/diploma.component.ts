@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { XMLParser } from 'fast-xml-parser';
 import { BuscaService } from '../../services/busca.service';
+import { codigoConsulta, montarXmlDiploma } from '../../services/xml-diploma';
 import { DadosCurso, DadosIES, DadosRegistro } from '../../models/dados.models';
 
 @Component({
@@ -54,7 +55,8 @@ export class DiplomaComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      this.codigo = params.get('id');
+      const bruto = params.get('id') || '';
+      this.codigo = codigoConsulta(bruto) || bruto;
     });
 
     if (!this.codigo) {
@@ -65,20 +67,28 @@ export class DiplomaComponent implements OnInit {
     const soMapy = this.MAPY_ID_RE.test(this.codigo);
     if (soMapy || DiplomaComponent.CODIGO_VALIDACAO_RE.test(this.codigo)) {
       const naoEncontrado = () => (soMapy ? this.router.navigate(['']) : this.carregarDiplomaDigital());
-      this._busca.getPublicacaoEstacio(this.codigo).subscribe({
-        next: (rows) => {
-          if (rows?.length) {
-            this.publicacaoEstacio = rows[0];
-            if (this.publicacaoEstacio.docx_url) {
-              this.docxCarregando = true;
-              setTimeout(() => this.renderizarDocx(), 0);
+      const tentar = (id: string, extra: boolean) => {
+        this._busca.getPublicacaoEstacio(id).subscribe({
+          next: (rows) => {
+            if (rows?.length) {
+              this.publicacaoEstacio = rows[0];
+              if (this.publicacaoEstacio.docx_url) {
+                this.docxCarregando = true;
+                setTimeout(() => this.renderizarDocx(), 0);
+              }
+              return;
             }
-          } else {
+            const curto = extra ? /^1270\.163\.00([0-9a-f]{10})$/i.exec(id)?.[1] : null;
+            if (curto) {
+              tentar(curto, false);
+              return;
+            }
             naoEncontrado();
-          }
-        },
-        error: () => naoEncontrado(),
-      });
+          },
+          error: () => naoEncontrado(),
+        });
+      };
+      tentar(this.codigo, true);
       return;
     }
 
@@ -299,6 +309,7 @@ export class DiplomaComponent implements OnInit {
     };
 
     const body = docXml.getElementsByTagNameNS(W, 'body')[0];
+    const larguraPagina = Number(docXml.getElementsByTagNameNS(W, 'pgSz')[0]?.getAttributeNS(W, 'w') || 18540);
     const paragrafosDoc = Array.from(body.children).filter((c) => c.localName === 'p');
     const renderizados = Array.from(secao.querySelectorAll<HTMLElement>(':scope > article > p'));
     if (paragrafosDoc.length !== renderizados.length) {
@@ -311,6 +322,20 @@ export class DiplomaComponent implements OnInit {
       const el = renderizados[idx];
       const pPr = filho(p, 'pPr');
       const estilo = attr(filho(pPr, 'pStyle')) || estiloPadrao;
+      // O recuo deslocado do título foi medido para "DE RIBEIRÃO PRETO".
+      // Nomes mais curtos, como "DE BACABAL", ficavam grudados à esquerda da primeira linha.
+      if (estilo === 'Heading1') {
+        const ind = filho(filho(estilos.get(estilo), 'pPr'), 'ind');
+        const esquerda = Number(attr(ind, 'left') || 0);
+        const direita = Number(attr(ind, 'right') || 0);
+        const suspenso = Number(attr(ind, 'hanging') || 0);
+        const largura = larguraPagina - (esquerda - suspenso) - direita;
+        const lado = Math.max(0, (larguraPagina - largura) / 2) / 20;
+        el.style.marginInlineStart = lado + 'pt';
+        el.style.marginInlineEnd = lado + 'pt';
+        el.style.textIndent = '0';
+        el.style.textAlign = 'center';
+      }
       const fonteEstilo = doEstilo(estilo, 'rFonts') || doEstilo(estiloPadrao, 'rFonts') || 'Arial';
       const szEstilo = Number(doEstilo(estilo, 'sz') || doEstilo(estiloPadrao, 'sz') || szPadrao) / 2;
       const negritoEstilo = (doEstilo(estilo, 'b') ?? doEstilo(estiloPadrao, 'b')) === 'true';
@@ -584,6 +609,8 @@ export class DiplomaComponent implements OnInit {
       secao.appendChild(grupo);
     }
 
+    this.posicionarAssinatura(secao);
+
     if (this.qrAlvo) {
       const q = this.qrAlvo;
       const ancQr = ancoras.find((a) => {
@@ -599,6 +626,23 @@ export class DiplomaComponent implements OnInit {
         q.style.left = offH - esquerdaAtual + 'px';
       }
     }
+  }
+
+  // No Word a assinatura fica acima do traço e o nome abaixo. No preview o nome sobe e cruza o traço.
+  private posicionarAssinatura(secao: HTMLElement): void {
+    const cargo = Array.from(secao.querySelectorAll<HTMLElement>('p')).find((p) => (p.textContent || '').trim() === 'Reitor (a)');
+    const nome = cargo?.previousElementSibling as HTMLElement | null;
+    if (!cargo || !nome || nome.tagName !== 'P') return;
+
+    const linha = Array.from(secao.querySelectorAll<HTMLElement>('.docx-grupo > div'))
+      .map((el) => ({ el, r: el.getBoundingClientRect() }))
+      .filter(({ el, r }) => !el.querySelector('img') && r.height <= 3 && r.width > 60 && r.width < 400)
+      .sort((a, b) => a.r.top - b.r.top)[0];
+    if (!linha) return;
+
+    const folga = 4;
+    const deslocamento = linha.r.bottom + folga - nome.getBoundingClientRect().top;
+    if (deslocamento > 0) nome.style.marginTop = (parseFloat(nome.style.marginTop) || 0) + deslocamento + 'px';
   }
 
   private async aplicarQrDinamico(host: HTMLElement): Promise<void> {
@@ -665,35 +709,30 @@ export class DiplomaComponent implements OnInit {
   }
 
   baixarXmlEstacio(): void {
-    const d = this.publicacaoEstacio;
-    if (!d) return;
-    const esc = (v: unknown) =>
-      String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const campos: [string, unknown][] = [
-      ['CodigoValidacao', d.pub_id], ['Protocolo', d.protocolo], ['Status', d.ativo ? 'Ativo' : 'Cancelado'],
-      ['Nome', d.nome], ['CPF', d.cpf], ['DataNascimento', d.nascimento], ['Nacionalidade', d.nacionalidade],
-      ['Naturalidade', d.naturalidade], ['RG', d.rg], ['OrgaoExpedidor', d.orgao_expedidor],
-      ['NomeMae', d.nome_mae], ['NomePai', d.nome_pai],
-      ['Curso', d.curso], ['Modalidade', d.modalidade], ['ReconhecimentoCurso', d.curso_reconhecimento],
-      ['AnoConclusao', d.ano_conclusao],
-      ['DataConclusao', d.data], ['DataColacaoGrau', d.data_colacao], ['Reitor', d.reitor],
-      ['LocalExpedicao', d.cidade_expedicao], ['DataExpedicao', d.data_expedicao],
-      ['NumeroRegistro', d.registro_numero], ['LivroRegistro', d.registro_livro], ['FolhaRegistro', d.registro_folha],
-      ['DataRegistro', d.registro_data], ['ProcessoRegistro', d.registro_processo],
-      ['Instituicao', d.instituicao], ['INEP', d.inep], ['Endereco', d.endereco], ['Bairro', d.bairro], ['CEP', d.cep],
-      ['Observacao', d.observacao],
-    ];
-    const xml =
-      '<?xml version="1.0" encoding="UTF-8"?>\n<Diploma>\n' +
-      campos.filter(([, v]) => v !== undefined && v !== null && v !== '')
-        .map(([k, v]) => `  <${k}>${esc(v)}</${k}>`).join('\n') +
-      '\n</Diploma>\n';
+    const xml = this.montarXmlEstacio();
+    const codigo = this.publicacaoEstacio?.pub_id;
+    if (!xml || !codigo) return;
     const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
     const a = document.createElement('a');
     a.href = url;
-    a.download = `diploma-${d.pub_id}.xml`;
+    a.download = `diploma-${codigo}.xml`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  enviarXmlConformidade(): void {
+    const xml = this.montarXmlEstacio();
+    const codigo = this.publicacaoEstacio?.pub_id;
+    if (!xml || !codigo) return;
+    sessionStorage.setItem('xmlConformidade', JSON.stringify({
+      codigo,
+      nome: `diploma-${codigo}.xml`,
+      xml,
+    }));
+  }
+
+  private montarXmlEstacio(): string | null {
+    return montarXmlDiploma(this.publicacaoEstacio);
   }
 
   dataPorExtenso(valor: string): string {

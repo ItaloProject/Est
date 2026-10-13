@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BuscaService } from '../../services/busca.service';
+import { CAMPOS_XML_DIPLOMA, ELEMENTOS_XML_DIPLOMA, codigoOficial, montarXmlDiploma } from '../../services/xml-diploma';
 
 type StatusVerificacao = 'sucesso' | 'erro' | 'alerta';
 
@@ -135,15 +136,50 @@ export class ConformidadeComponent implements OnInit {
 
   ngOnInit(): void {
     const codigo = this.route.snapshot.paramMap.get('id') ?? '';
+    if (this.receberXmlGerado(codigo)) {
+      this.verificar();
+      return;
+    }
+
     const salvo = JSON.parse(sessionStorage.getItem('diplomaDigital'));
     sessionStorage.removeItem('diplomaDigital');
 
     if (codigo && salvo && salvo.codValidacaoDiploma === codigo && salvo.codXmlPublico) {
       const bytes = Uint8Array.from(atob(salvo.codXmlPublico), (c) => c.charCodeAt(0));
-      this.nomeArquivo = 'documento.xml';
-      this.tamanhoArquivo = this.calcularTamanho(bytes.length);
-      this.conteudo = new TextDecoder('utf-8').decode(bytes);
+      this.definirArquivo('documento.xml', new TextDecoder('utf-8').decode(bytes), bytes.length);
+      return;
     }
+
+    if (/^[0-9a-f]{10}$/i.test(codigo)) {
+      this._busca.getPublicacaoEstacio(codigo).subscribe({
+        next: (rows) => {
+          const xml = montarXmlDiploma(rows?.[0]);
+          if (!xml) return;
+          this.definirArquivo(`diploma-${codigo}.xml`, xml);
+          this.verificar();
+        },
+      });
+    }
+  }
+
+  private receberXmlGerado(codigo: string): boolean {
+    const enviado = sessionStorage.getItem('xmlConformidade');
+    if (!enviado) {
+      return false;
+    }
+    sessionStorage.removeItem('xmlConformidade');
+    const dados = JSON.parse(enviado);
+    if (!dados?.xml || (codigo && dados.codigo !== codigo)) {
+      return false;
+    }
+    this.definirArquivo(dados.nome || 'documento.xml', dados.xml);
+    return true;
+  }
+
+  private definirArquivo(nome: string, texto: string, bytes?: number): void {
+    this.nomeArquivo = nome;
+    this.tamanhoArquivo = this.calcularTamanho(bytes ?? new TextEncoder().encode(texto).length);
+    this.conteudo = texto;
   }
 
   selecionarArquivo(event: Event): void {
@@ -180,6 +216,15 @@ export class ConformidadeComponent implements OnInit {
     }
 
     const raiz = documento.documentElement;
+    if (this.ehXmlDaPlataforma(documento, raiz)) {
+      if (documento.getElementsByTagNameNS('*', 'infDiploma').length) {
+        this.verificarEstruturaOficial(documento, raiz);
+      } else {
+        this.verificarEstruturaPlataforma(documento, raiz);
+      }
+      return;
+    }
+
     const possui = (tag: string) => documento.getElementsByTagNameNS('*', tag).length > 0;
     const assinaturas = documento.getElementsByTagNameNS(NAMESPACE_ASSINATURA, 'Signature').length;
     const codigoValidacao = documento.getElementsByTagNameNS('*', 'CodigoValidacao')[0]?.textContent?.trim() ?? '';
@@ -246,6 +291,200 @@ export class ConformidadeComponent implements OnInit {
         },
       });
     }
+  }
+
+  private ehXmlDaPlataforma(documento: Document, raiz: Element): boolean {
+    if (raiz.localName !== 'Diploma') return false;
+    if (documento.getElementsByTagNameNS(NAMESPACE_ASSINATURA, 'Signature').length) return false;
+    if (documento.getElementsByTagNameNS('*', 'infDiploma').length) return true;
+    const filhos = Array.from(raiz.children);
+    if (!filhos.length) return false;
+    const conhecidos = new Set<string>(CAMPOS_XML_DIPLOMA);
+    const reconhecidos = filhos.filter((el) => conhecidos.has(el.localName)).length;
+    return reconhecidos / filhos.length >= 0.5;
+  }
+
+  private verificarEstruturaOficial(documento: Document, raiz: Element): void {
+    const conhecidos = new Set<string>(ELEMENTOS_XML_DIPLOMA);
+    const desconhecidos = Array.from(new Set(
+      Array.from(documento.getElementsByTagName('*'))
+        .filter((el) => !conhecidos.has(el.localName))
+        .map((el) => el.localName),
+    ));
+    const possui = (tag: string) => documento.getElementsByTagNameNS('*', tag).length > 0;
+    const faltando = [
+      ['Diplomado', 'dados do diplomado'],
+      ['Sexo', 'sexo'],
+      ['Naturalidade', 'naturalidade'],
+      ['CodigoMunicipio', 'código do município'],
+      ['CPF', 'CPF'],
+      ['DataNascimento', 'data de nascimento'],
+      ['OutroDocumentoIdentificacao', 'documento de identidade'],
+      ['NomeCurso', 'nome do curso'],
+      ['Modalidade', 'modalidade (Presencial ou EAD)'],
+      ['GrauConferido', 'grau conferido'],
+      ['IesEmissora', 'IES emissora'],
+      ['IesRegistradora', 'IES registradora'],
+      ['LivroRegistro', 'livro de registro'],
+      ['ResponsavelRegistro', 'responsável pelo registro'],
+      ['CodigoValidacao', 'código de validação'],
+      ['Signature', 'assinatura digital'],
+    ].filter(([tag]) => !possui(tag)).map(([, nome]) => nome);
+    const inf = documento.getElementsByTagNameNS('*', 'infDiploma')[0];
+    const idInvalido = !/^VDip\d{44}$/.test(inf?.getAttribute('id') || '');
+    const responsavel = documento.getElementsByTagNameNS('*', 'ResponsavelRegistro')[0];
+    if (responsavel && !responsavel.getElementsByTagNameNS('*', 'CPF').length) faltando.push('CPF do responsável pelo registro');
+    const codigoValidacao = documento.getElementsByTagNameNS('*', 'CodigoValidacao')[0]?.textContent?.trim() ?? '';
+    const codigoRota = this.route.snapshot.paramMap.get('id') ?? '';
+    const codigoFormatoOk = /^\d+\.\d+\.[0-9a-f]{12}$/i.test(codigoValidacao);
+    const codigoOk = codigoFormatoOk && (!codigoRota || codigoValidacao === codigoRota || codigoOficial(codigoRota) === codigoValidacao);
+    const namespaceOk = raiz.namespaceURI === NAMESPACE_DIPLOMA;
+    const estruturaOk = namespaceOk && !desconhecidos.length && !faltando.length && !idInvalido && codigoOk;
+    const pendente = 'Não executada: a estrutura do XML precisa ser aprovada antes.';
+
+    this.verificacoes = [
+      {
+        titulo: 'Validação da Estrutura do Diploma Digital',
+        descricao: estruturaOk
+          ? 'O XML atende ao schema do Diploma Digital.'
+          : this.descreverEstrutura(namespaceOk, faltando, desconhecidos, !!idInvalido),
+        status: estruturaOk ? 'sucesso' : 'erro',
+      },
+      {
+        titulo: 'Validação dos Tipos de Assinaturas Digitais',
+        descricao: estruturaOk ? 'Há assinaturas no documento.' : pendente,
+        status: estruturaOk && possui('Signature') ? 'sucesso' : estruturaOk ? 'erro' : 'alerta',
+      },
+      {
+        titulo: 'Validação de Conformidade das Assinaturas Digitais',
+        descricao: possui('Signature')
+          ? 'A conformidade do certificado ICP-Brasil não pode ser confirmada por esta plataforma.'
+          : pendente,
+        status: 'alerta',
+      },
+      {
+        titulo: 'Validação da Integridade do Arquivo do Diploma Digital',
+        descricao: possui('Signature')
+          ? 'A integridade depende da assinatura com o certificado da IES.'
+          : pendente,
+        status: 'alerta',
+      },
+      {
+        titulo: 'Código de Validação',
+        descricao: !estruturaOk
+          ? pendente
+          : codigoOk
+            ? `Código ${codigoValidacao} no formato e-MEC da emissora, e-MEC da registradora e código da registradora.`
+            : 'O código não está no formato exigido pelo MEC.',
+        status: !estruturaOk ? 'alerta' : codigoOk ? 'sucesso' : 'erro',
+      },
+    ];
+
+    if (!estruturaOk) return;
+    const consulta = /^[0-9a-f]{10}$/i.test(codigoRota) ? codigoRota : codigoValidacao;
+    this._busca.getPublicacaoEstacio(consulta).subscribe({
+      next: (rows) => {
+        if (rows?.length) return;
+        this.verificacoes[4] = {
+          titulo: 'Código de Validação',
+          descricao: 'O código tem o formato certo, mas o diploma não foi encontrado nesta plataforma.',
+          status: 'erro',
+        };
+        this.verificacoes = [...this.verificacoes];
+      },
+      error: () => {
+        this.verificacoes[4] = {
+          titulo: 'Código de Validação',
+          descricao: 'Não foi possível consultar o diploma nesta plataforma.',
+          status: 'erro',
+        };
+        this.verificacoes = [...this.verificacoes];
+      },
+    });
+  }
+
+  private descreverEstrutura(namespaceOk: boolean, faltando: string[], desconhecidos: string[], idInvalido: boolean): string {
+    const partes = [
+      namespaceOk ? '' : 'namespace diferente do padrão do MEC',
+      idInvalido ? 'identificador precisa ter VDip e 44 dígitos' : '',
+      faltando.length ? `faltam ${faltando.join(', ')}` : '',
+      desconhecidos.length ? `campos fora do schema: ${desconhecidos.join(', ')}` : '',
+    ].filter(Boolean);
+    return partes.length ? `Estrutura recusada. ${partes.join('. ')}.` : 'Estrutura recusada.';
+  }
+
+  private marcarOrigem(idx: number, ok: boolean): void {
+    this.verificacoes[idx] = {
+      titulo: 'Plataforma de origem',
+      descricao: ok
+        ? 'Diploma registrado e validado nesta plataforma.'
+        : 'Este XML não foi gerado por esta plataforma.',
+      status: ok ? 'sucesso' : 'erro',
+    };
+    this.verificacoes = [...this.verificacoes];
+  }
+
+  private verificarEstruturaPlataforma(documento: Document, raiz: Element): void {
+    const conhecidos = new Set<string>(CAMPOS_XML_DIPLOMA);
+    const filhos = Array.from(raiz.children);
+    const desconhecidos = filhos.filter((el) => !conhecidos.has(el.localName)).map((el) => el.localName);
+    const reconhecidos = filhos.length - desconhecidos.length;
+    const percentual = filhos.length ? Math.round((reconhecidos / filhos.length) * 100) : 0;
+    const codigoValidacao = documento.getElementsByTagName('CodigoValidacao')[0]?.textContent?.trim() ?? '';
+    const codigoRota = this.route.snapshot.paramMap.get('id') ?? '';
+    const codigoOk = !!codigoValidacao && (!codigoRota || codigoValidacao === codigoRota);
+
+    this.verificacoes = [
+      { titulo: 'Estrutura do XML', descricao: 'O arquivo é um XML bem formado.', status: 'sucesso' },
+      { titulo: 'Tipo de documento', descricao: 'Documento do tipo Diploma.', status: 'sucesso' },
+      {
+        titulo: 'Estrutura reconhecida',
+        descricao: desconhecidos.length
+          ? `${percentual}% reconhecido. Campos fora da estrutura: ${desconhecidos.join(', ')}.`
+          : `${reconhecidos} de ${filhos.length} campos reconhecidos (100%).`,
+        status: percentual === 100 ? 'sucesso' : 'erro',
+      },
+      {
+        titulo: 'Código de validação',
+        descricao: codigoOk
+          ? `Código ${codigoValidacao} identificado.`
+          : codigoValidacao
+            ? 'O código do XML não corresponde a este diploma.'
+            : 'Código de validação não encontrado no XML.',
+        status: codigoOk ? 'sucesso' : 'erro',
+      },
+      {
+        titulo: 'Plataforma de origem',
+        descricao: codigoValidacao
+          ? 'Verificando registro na plataforma...'
+          : 'Código de validação não encontrado no XML.',
+        status: codigoValidacao ? 'alerta' : 'erro',
+      },
+    ];
+
+    if (!codigoValidacao) return;
+    const idx = this.verificacoes.length - 1;
+    this._busca.getPublicacaoEstacio(codigoValidacao).subscribe({
+      next: (rows) => {
+        const ok = !!rows?.length;
+        this.verificacoes[idx] = {
+          titulo: 'Plataforma de origem',
+          descricao: ok
+            ? 'Diploma registrado e validado nesta plataforma.'
+            : 'Este XML não foi gerado por esta plataforma.',
+          status: ok ? 'sucesso' : 'erro',
+        };
+        this.verificacoes = [...this.verificacoes];
+      },
+      error: () => {
+        this.verificacoes[idx] = {
+          titulo: 'Plataforma de origem',
+          descricao: 'Este XML não foi gerado por esta plataforma.',
+          status: 'erro',
+        };
+        this.verificacoes = [...this.verificacoes];
+      },
+    });
   }
 
   limpar(): void {

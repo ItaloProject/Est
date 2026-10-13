@@ -32,7 +32,7 @@
               </div>
             </div>
             <form (submit)="buscaDigital(codigo.value)">
-              <input #codigo placeholder="Código de verificação" mask="AAA.AAA.AAAAAAAAAAAA||AAAA.AAA.AAAAAAAAAAAA" />
+              <input #codigo placeholder="Código de verificação" [mask]="mascaraCodigo" />
               <button type="submit"><i-bs name="arrow-right-short"></i-bs></button>
             </form>
             <div class="msg-erro-consulta-diploma" *ngIf="erroDiploma">
@@ -104,7 +104,7 @@
                   </div>
                 </div>
                 <form (submit)="buscaDigital(codigo.value)">
-                  <input #codigo placeholder="Código de verificação" mask="AAA.AAA.AAAAAAAAAAAA||AAAA.AAA.AAAAAAAAAAAA" />
+                  <input #codigo placeholder="Código de verificação" [mask]="mascaraCodigo" />
                   <button type="submit"><i-bs name="arrow-right-short"></i-bs></button>
                 </form>
                 <div class="msg-erro-consulta-diploma" *ngIf="erroDiploma">

@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { BuscaService } from '../../services/busca.service';
+import { codigoConsulta } from '../../services/xml-diploma';
 import { DiplomaComponent } from '../diploma/diploma.component';
 
 @Component({
@@ -27,6 +28,7 @@ export class MainComponent implements OnInit {
   erroDiploma = false;
   diplomaDigital: any;
   buscaForm: any;
+  mascaraCodigo = 'AAAAAAAAAA||AAAA.AAA.AAAAAAAAAAAA';
 
   faq = {
     texto:
@@ -151,8 +153,10 @@ export class MainComponent implements OnInit {
 
   buscaDigital(codigo: string): void {
     const codigoLimpo = (codigo || '').trim();
-    if (DiplomaComponent.CODIGO_VALIDACAO_RE.test(codigoLimpo)) {
-      this.route.navigate(['/diploma/' + codigoLimpo]);
+    const estacio = codigoConsulta(codigoLimpo);
+    if (estacio || DiplomaComponent.CODIGO_VALIDACAO_RE.test(codigoLimpo)) {
+      this.erroDiploma = false;
+      this.route.navigate(['/diploma/' + (estacio || codigoLimpo)]);
       return;
     }
     this.spinnerFunction();

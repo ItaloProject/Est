@@ -100,14 +100,13 @@
                       (click)="baixarPdfEstacio()">{{ gerandoPdf ? 'Gerando PDF…' : 'Baixar RVDD' }}</button>
             </div>
             <div class="col-sm-12">
-              <a class="btn btn-validar" [routerLink]="['/conformidade']">Portal de conformidade do XML</a>
+              <a class="btn btn-validar" [routerLink]="['/conformidade', publicacaoEstacio.pub_id]" (click)="enviarXmlConformidade()">Portal de conformidade do XML</a>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>
               <div [collapse]="!dadosEstacioOpen[0]" [isAnimated]="true">
                 <div class="body">
                   <ng-container *ngIf="publicacaoEstacio.instituicao"><label>Nome</label><p>{{ publicacaoEstacio.instituicao }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.inep"><label>INEP</label><p>{{ publicacaoEstacio.inep }}</p></ng-container>
                   <h5 *ngIf="publicacaoEstacio.endereco || publicacaoEstacio.bairro || publicacaoEstacio.cep || publicacaoEstacio.municipio">Endereço</h5>
                   <ng-container *ngIf="publicacaoEstacio.endereco"><label>Logradouro</label><p>{{ publicacaoEstacio.endereco }}</p></ng-container>
                   <ng-container *ngIf="publicacaoEstacio.bairro"><label>Bairro</label><p>{{ publicacaoEstacio.bairro }}</p></ng-container>
