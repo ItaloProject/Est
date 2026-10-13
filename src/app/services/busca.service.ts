@@ -28,4 +28,15 @@ export class BuscaService {
       params: { codValidacaoDiploma },
     });
   }
+
+  getPublicacaoEstacio(pubId: string) {
+    const headers = new HttpHeaders({
+      apikey: environment.supabaseKey,
+      Authorization: `Bearer ${environment.supabaseKey}`,
+    });
+    return this.http.get<any[]>(
+      `${environment.supabaseUrl}/rest/v1/publicacoes?pub_id=eq.${pubId}&grupo=eq.estacio&select=*`,
+      { headers }
+    );
+  }
 }

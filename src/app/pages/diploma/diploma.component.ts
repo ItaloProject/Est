@@ -29,10 +29,33 @@ export class DiplomaComponent implements OnInit {
   dadosRegistro: any = new DadosRegistro();
   dadosIES: any = new DadosIES();
 
+  publicacaoEstacio: any = null;
+  dadosEstacioOpen = [false, false, false];
+  private readonly MAPY_ID_RE = /^[0-9a-f]{10}$/i;
+
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.codigo = params.get('id');
     });
+
+    if (!this.codigo) {
+      this.router.navigate(['']);
+      return;
+    }
+
+    if (this.MAPY_ID_RE.test(this.codigo)) {
+      this._busca.getPublicacaoEstacio(this.codigo).subscribe({
+        next: (rows) => {
+          if (rows?.length) {
+            this.publicacaoEstacio = rows[0];
+          } else {
+            this.router.navigate(['']);
+          }
+        },
+        error: () => this.router.navigate(['']),
+      });
+      return;
+    }
 
     const salvo = JSON.parse(sessionStorage.getItem('diplomaDigital'));
     const codSalvo = salvo ? salvo.codValidacaoDiploma : '';
@@ -46,7 +69,7 @@ export class DiplomaComponent implements OnInit {
       if (this.user.codTipoCurso === 1 || this.user.codTipoCurso === 3 || this.user.codTipoCurso === 45) {
         this.semXML = true;
       }
-    } else if (this.codigo != '') {
+    } else {
       this._busca.getDiplomaDigital(this.codigo).subscribe((res) => {
         this.user = res;
         if (this.user.codTipoCurso === 1 || this.user.codTipoCurso === 3 || this.user.codTipoCurso === 45) {
@@ -62,8 +85,6 @@ export class DiplomaComponent implements OnInit {
           this.router.navigate(['']);
         }
       });
-    } else {
-      this.router.navigate(['']);
     }
   }
 
@@ -73,6 +94,15 @@ export class DiplomaComponent implements OnInit {
     } else {
       this.dadosDiplomaOpen = [false, false, false];
       this.dadosDiplomaOpen[i] = true;
+    }
+  }
+
+  openEstacio(i: number): void {
+    if (this.dadosEstacioOpen[i]) {
+      this.dadosEstacioOpen[i] = false;
+    } else {
+      this.dadosEstacioOpen = [false, false, false];
+      this.dadosEstacioOpen[i] = true;
     }
   }
 

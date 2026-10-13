@@ -1,4 +1,69 @@
 <navbar></navbar>
+
+<ng-container *ngIf="publicacaoEstacio">
+  <div class="container">
+    <div class="header">
+      <div class="row">
+        <div class="col-md-3">
+          <h1>{{ publicacaoEstacio.nome }}</h1>
+          <p><b>CPF: </b>{{ publicacaoEstacio.cpf }}</p>
+          <p><b>Data de Nascimento: </b>{{ publicacaoEstacio.nascimento }}</p>
+        </div>
+        <div class="col-md-3 offset-md-1 col-lg-3 second-block">
+          <p *ngIf="publicacaoEstacio.municipio"><b>Naturalidade: </b>{{ publicacaoEstacio.municipio }}</p>
+          <p *ngIf="publicacaoEstacio.rg"><b>RG: </b>{{ publicacaoEstacio.rg }}</p>
+          <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
+        </div>
+        <div class="col-md-5 col-lg-6 btn-status-container">
+          <button [ngClass]="publicacaoEstacio.ativo ? 'ativo' : 'inativo'">
+            Status do diploma: <b>{{ publicacaoEstacio.ativo ? 'Ativo' : 'Cancelado' }}</b>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section-pesquisa">
+    <div class="container">
+      <div class="row">
+        <section class="col-md-8">
+          <img src="assets/images/diploma-frente.png" class="img-fluid w-100" alt="diploma" />
+        </section>
+        <section class="col-md-4">
+          <div class="row pdf-buttons">
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>
+              <div *ngIf="dadosEstacioOpen[0]" class="dados-estacio-panel">
+                <p *ngIf="publicacaoEstacio.instituicao"><b>Instituição:</b> {{ publicacaoEstacio.instituicao }}</p>
+                <p *ngIf="publicacaoEstacio.inep"><b>INEP:</b> {{ publicacaoEstacio.inep }}</p>
+                <p *ngIf="publicacaoEstacio.endereco"><b>Endereço:</b> {{ publicacaoEstacio.endereco }}<span *ngIf="publicacaoEstacio.bairro">, {{ publicacaoEstacio.bairro }}</span></p>
+                <p *ngIf="publicacaoEstacio.municipio"><b>Município:</b> {{ publicacaoEstacio.municipio }}<span *ngIf="publicacaoEstacio.cep"> — {{ publicacaoEstacio.cep }}</span></p>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="openEstacio(1)" [attr.aria-expanded]="dadosEstacioOpen[1]">Dados do Curso</button>
+              <div *ngIf="dadosEstacioOpen[1]" class="dados-estacio-panel">
+                <p *ngIf="publicacaoEstacio.curso"><b>Curso:</b> {{ publicacaoEstacio.curso }}</p>
+                <p *ngIf="publicacaoEstacio.modalidade"><b>Modalidade:</b> {{ publicacaoEstacio.modalidade }}</p>
+                <p *ngIf="publicacaoEstacio.ano_conclusao"><b>Ano de Conclusão:</b> {{ publicacaoEstacio.ano_conclusao }}</p>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <button class="btn btn-dados" (click)="openEstacio(2)" [attr.aria-expanded]="dadosEstacioOpen[2]">Dados do Registro</button>
+              <div *ngIf="dadosEstacioOpen[2]" class="dados-estacio-panel">
+                <p *ngIf="publicacaoEstacio.protocolo"><b>Protocolo:</b> {{ publicacaoEstacio.protocolo }}</p>
+                <p *ngIf="publicacaoEstacio.data"><b>Data:</b> {{ publicacaoEstacio.data }}</p>
+                <p *ngIf="publicacaoEstacio.status"><b>Status:</b> {{ publicacaoEstacio.status }}</p>
+                <p *ngIf="publicacaoEstacio.observacao"><b>Observação:</b> {{ publicacaoEstacio.observacao }}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
 <ng-container *ngIf="user">
   <div class="container">
     <div class="header">
