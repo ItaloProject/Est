@@ -1,47 +1,203 @@
-:host { display: block; min-height: 100%; }
+:host { display: block; height: 100%; font-family: "Segoe UI", Helvetica, Arial, sans-serif; color: #3d3d3d; }
 .tela { min-height: 100vh; display: flex; font-family: "Segoe UI", Helvetica, Arial, sans-serif; color: #3d3d3d; }
 .lado-esquerdo {
-  flex: 1.35; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 18px; padding: 48px 40px; background: linear-gradient(218deg, #27ABBF 0%, #79C6C0 100%); color: #fff;
+  flex: 1.35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 48px 40px;
+  background: linear-gradient(218deg, #27ABBF 0%, #79C6C0 100%);
+  color: #fff;
 }
-.lado-esquerdo h2 { margin: 0; font-weight: 400; font-size: 34px; line-height: 1.25; text-align: center; }
+.conteudo-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+.btn-banner { display: none; }
+.lado-esquerdo h2 {
+  margin: 0;
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.25;
+  text-align: center;
+}
 .lado-esquerdo h2 strong { font-weight: 700; }
 .lado-esquerdo img.banner { width: min(560px, 86%); height: auto; }
-.lado-direito { flex: 0 0 42%; max-width: 560px; background: #fff; display: flex; flex-direction: column; min-height: 100vh; }
-.miolo { flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px 24px 16px; }
-.card { width: 320px; }
+.lado-direito {
+  flex: 0 0 42%;
+  max-width: 560px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.miolo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px 16px;
+}
+.formulario { width: 320px; animation: surgir 1s ease both; }
 .logo { display: block; height: 52px; margin: 0 auto 14px; }
 h1 { margin: 0; font-size: 14px; font-weight: 500; text-align: center; color: #4a4a4a; }
 .data { margin: 4px 0 22px; text-align: center; color: #9a9a9a; font-size: 12px; }
-.btn-outlook, .btn-entrar { width: 100%; min-height: 48px; border: 0; border-radius: 4px; font-size: 15px; cursor: pointer; }
-.btn-outlook { background: #0072C6; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-outlook, .btn-entrar {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-outlook {
+  background: #0072C6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 .btn-outlook img { width: 20px; height: 20px; }
 .btn-outlook:hover { background: #005A9D; }
-.separador { display: flex; align-items: center; gap: 8px; color: #9aa0a6; font-size: 11px; margin: 14px 0; }
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #9aa0a6;
+  font-size: 11px;
+  margin: 14px 0;
+}
 .separador::before, .separador::after { content: ""; flex: 1; border-bottom: 1px solid #d0d4d8; }
-label.rotulo { display: block; font-size: 12px; color: #6b6b6b; margin-bottom: 4px; }
+label.rotulo { display: block; font-size: 12px; color: #6b6b6b; margin-bottom: 4px; font-weight: 400; }
 .campo { display: flex; margin-bottom: 4px; }
-.campo input { flex: 1; min-width: 0; height: 38px; border: 1px solid #ced4da; border-right: 0; border-radius: 4px 0 0 4px; padding: 0 10px; font-size: 14px; }
+.campo input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  border: 1px solid #ced4da;
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
 .campo input:focus { outline: none; border-color: #80bdff; }
-.icone { width: 40px; border: 1px solid #ced4da; border-radius: 0 4px 4px 0; background: #fff; color: #b0b0b0; display: flex; align-items: center; justify-content: center; }
-.icone button { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.icone {
+  width: 40px;
+  border: 1px solid #ced4da;
+  border-radius: 0 4px 4px 0;
+  background: #fff;
+  color: #b0b0b0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icone button { border: 0; background: transparent; color: inherit; cursor: pointer; font-family: inherit; }
 .link { display: block; text-align: right; color: #0BBBEF; font-size: 12px; margin: 2px 0 12px; cursor: pointer; text-decoration: none; }
 .link:hover { text-decoration: underline; }
-.verificacao { display: flex; align-items: center; justify-content: space-between; border: 1px solid #d3d3d3; background: #f9f9f9; border-radius: 3px; min-height: 74px; padding: 10px 12px; margin: 4px 0 14px; }
-.verificacao label { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #222; cursor: pointer; }
-.verificacao input { width: 22px; height: 22px; margin: 0; }
-.verificacao small { color: #888; font-size: 10px; line-height: 1.2; text-align: right; }
+.verificacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #d3d3d3;
+  background: #f9f9f9;
+  border-radius: 3px;
+  min-height: 74px;
+  padding: 10px 12px;
+  margin: 4px 0 14px;
+}
+.lado-check { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.caixa {
+  width: 28px; height: 28px; flex: 0 0 28px; margin-top: 1px;
+  border: 2px solid #c1c1c1; border-radius: 2px; background: #fff;
+  display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;
+}
+.caixa:disabled { cursor: default; }
+.caixa.validando, .caixa.ok { border-color: transparent; background: transparent; }
+.caixa svg { width: 24px; height: 24px; }
+.caixa svg path { fill: none; stroke: #188038; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.bolinha {
+  width: 22px; height: 22px; border-radius: 50%; box-sizing: border-box;
+  border: 3px solid #4285f4; border-top-color: transparent;
+  animation: girar 0.75s linear infinite;
+}
+.textos-robo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rotulo-robo { font-size: 14px; color: #000; line-height: 28px; }
+.cota { font-size: 9px; line-height: 1.25; color: #555; text-decoration: underline; max-width: 168px; }
+.marca-recaptcha { width: 64px; display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.marca-recaptcha img { width: 32px; height: 32px; }
+.marca-recaptcha strong { margin-top: 2px; font-size: 8px; font-weight: 700; color: #9aa0a6; }
+.marca-recaptcha small { margin-top: 2px; font-size: 6px; color: #9aa0a6; }
+@keyframes girar { to { transform: rotate(360deg); } }
 .erro { color: #c0392b; font-size: 12px; min-height: 16px; margin: 0 0 8px; }
 .btn-entrar { background: #c6c6c6; color: #fff; font-weight: 700; }
 .btn-entrar:not(:disabled) { background: #53B36C; cursor: pointer; }
 .btn-entrar:disabled { cursor: not-allowed; }
 .btn-entrar:not(:disabled):hover { background: #218838; }
-.chamada-faq { background: #f5f6fa; min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #4a4a4a; }
+.chamada-faq {
+  animation: surgir 2s ease both;
+  background: #f5f6fa;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #4a4a4a;
+}
 .chamada-faq a { color: #0BBBEF; text-decoration: none; display: flex; align-items: center; gap: 6px; }
 .chamada-faq a i { font-size: 20px; }
+@keyframes surgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 @media (max-width: 900px) {
   .tela { flex-direction: column; }
   .lado-direito { flex: none; max-width: none; min-height: auto; }
-  .lado-esquerdo { min-height: 320px; padding: 28px 16px; }
+  .lado-esquerdo {
+    position: relative;
+    min-height: 320px;
+    padding: 28px 16px;
+    overflow: hidden;
+    transition: min-height 0.3s ease, padding 0.3s ease;
+  }
   .lado-esquerdo h2 { font-size: 26px; }
+  .lado-esquerdo.recolhido {
+    min-height: 56px;
+    padding: 0;
+    background: #fff;
+  }
+  .lado-esquerdo.recolhido .conteudo-banner { display: none; }
+  .btn-banner {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #6aa4e0;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+  }
+  .btn-banner svg { width: 18px; height: 18px; }
+  .btn-banner svg path {
+    fill: none;
+    stroke: #2f7fd8;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 }

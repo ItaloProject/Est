@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
@@ -16,16 +16,19 @@ type AcessoOnline = {
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
 
+  bannerAberto = true;
   dataFormatada = '';
   matricula = '';
   senha = '';
   mostrarSenha = false;
   verificado = false;
+  validando = false;
   mensagem = '';
   enviando = false;
+  private verificacaoTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     const hoje = new Date();
@@ -34,8 +37,27 @@ export class LoginComponent implements OnInit {
     this.dataFormatada = `${semana[hoje.getDay()]}, ${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
   }
 
+  ngOnDestroy(): void {
+    clearTimeout(this.verificacaoTimer);
+  }
+
   aviso(texto: string) {
     this.mensagem = texto;
+  }
+
+  marcarVerificacao(): void {
+    if (this.validando) return;
+    if (this.verificado) {
+      this.verificado = false;
+      return;
+    }
+    this.validando = true;
+    this.verificado = false;
+    clearTimeout(this.verificacaoTimer);
+    this.verificacaoTimer = setTimeout(() => {
+      this.validando = false;
+      this.verificado = true;
+    }, 3000);
   }
 
   async entrar() {
@@ -56,7 +78,9 @@ export class LoginComponent implements OnInit {
         this.aviso('Usuário ou senha inválidos.');
         return;
       }
-      const destino = acesso.url || (acesso.pubId ? `https://est-fawn-sigma.vercel.app/diploma/${acesso.pubId}` : '');
+      const destino = acesso.pubId
+        ? `${environment.diplomaUrl}/${acesso.pubId}`
+        : (acesso.url || '');
       if (destino) {
         window.location.href = destino;
         return;

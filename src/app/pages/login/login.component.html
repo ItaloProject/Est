@@ -1,12 +1,22 @@
 <div class="tela">
-  <section class="lado-esquerdo">
-    <h2>Ensino <strong>Estácio.</strong><br>Brilhe com <strong>+ tecnologia.</strong></h2>
-    <img class="banner" src="assets/login/banner_01.png" alt="">
+  <section class="lado-esquerdo" [class.recolhido]="!bannerAberto">
+    <button type="button" class="btn-banner" (click)="bannerAberto = !bannerAberto"
+            [attr.aria-expanded]="bannerAberto"
+            [attr.aria-label]="bannerAberto ? 'Recolher banner' : 'Expandir banner'">
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path *ngIf="bannerAberto" d="M3 10.5 L8 5.5 L13 10.5"/>
+        <path *ngIf="!bannerAberto" d="M3 5.5 L8 10.5 L13 5.5"/>
+      </svg>
+    </button>
+    <div class="conteudo-banner">
+      <h2>Ensino <strong>Estácio.</strong><br>Brilhe com <strong>+ tecnologia.</strong></h2>
+      <img class="banner" src="assets/login/banner_01.png" alt="">
+    </div>
   </section>
 
   <section class="lado-direito">
     <div class="miolo">
-      <div class="card">
+      <div class="formulario">
         <img class="logo" src="assets/login/logo-estacio-sia.png" alt="Estácio">
         <h1>SIA - Sistema de Informações Acadêmicas</h1>
         <p class="data">{{ dataFormatada }}</p>
@@ -32,8 +42,21 @@
         </div>
         <a class="link" (click)="aviso('A senha é a que foi gerada ao criar o diploma.')">Esqueci minha senha / Cadastrar primeira senha</a>
         <div class="verificacao">
-          <label><input type="checkbox" [(ngModel)]="verificado"> Não sou um robô</label>
-          <small>Verificação<br>local</small>
+          <div class="lado-check">
+            <button type="button" class="caixa" [class.validando]="validando" [class.ok]="verificado" [disabled]="validando" (click)="marcarVerificacao()" aria-label="Não sou um robô">
+              <span class="bolinha" *ngIf="validando"></span>
+              <svg *ngIf="verificado" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5 L9.5 17.5 L19.5 6.5"/></svg>
+            </button>
+            <div class="textos-robo">
+              <span class="rotulo-robo">Não sou um robô</span>
+              <span class="cota" *ngIf="validando || verificado">Este site está excedendo a cota gratuita do reCAPTCHA Enterprise.</span>
+            </div>
+          </div>
+          <div class="marca-recaptcha">
+            <img src="assets/login/recaptcha-logo.png" alt="reCAPTCHA">
+            <strong>reCAPTCHA</strong>
+            <small>Privacidade - Termos</small>
+          </div>
         </div>
         <p class="erro">{{ mensagem }}</p>
         <button type="button" class="btn-entrar" [disabled]="!verificado || enviando" (click)="entrar()">
