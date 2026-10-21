@@ -3,8 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { XMLParser } from 'fast-xml-parser';
 import { BuscaService } from '../../services/busca.service';
-import { codigoConsulta, montarXmlDiploma } from '../../services/xml-diploma';
+import { CURSO_PADRAO, codigoConsulta, montarXmlDiploma, painelCurso, painelIes, painelRegistro } from '../../services/xml-diploma';
 import { DadosCurso, DadosIES, DadosRegistro } from '../../models/dados.models';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-diploma',
@@ -31,6 +32,8 @@ export class DiplomaComponent implements OnInit {
   dadosRegistro: any = new DadosRegistro();
   dadosIES: any = new DadosIES();
 
+  diplomaUrl = environment.diplomaUrl;
+  conformidadeUrl = environment.conformidadeUrl;
   publicacaoEstacio: any = null;
   dadosEstacioOpen = [false, false, false];
   docxErro = false;
@@ -53,6 +56,158 @@ export class DiplomaComponent implements OnInit {
     return DiplomaComponent.ALTURA_LINHA_FONTE[nome] ?? 1.15;
   }
 
+  sexoEstacio(): string {
+    const pub = this.publicacaoEstacio;
+    if (!pub) return '';
+    let bruto = String(pub.sexo || '');
+    if (!bruto && typeof pub.inep === 'string' && pub.inep.trim().startsWith('{')) {
+      try { bruto = JSON.parse(pub.inep).sexo || ''; } catch { bruto = ''; }
+    }
+    const n = bruto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (n === 'M' || n.startsWith('MASC')) return 'Masculino';
+    if (n === 'F' || n.startsWith('FEM')) return 'Feminino';
+    return bruto;
+  }
+
+  private montarDadosIES(pub: Record<string, unknown>) {
+    const e = painelIes(pub);
+    const ato = e.credenciamento;
+    const campo = (valor: unknown) => [String(valor)];
+    const endereco = {
+      Logradouro: campo(e.logradouro),
+      Numero: campo(e.numero),
+      Bairro: campo(e.bairro),
+      CEP: campo(e.cep),
+      NomeMunicipio: campo(e.municipio),
+      CodigoMunicipio: campo(e.codigoMunicipio),
+      UF: campo(e.uf),
+    };
+    return {
+      Nome: campo(e.nome),
+      CodigoMEC: campo(e.codigo),
+      CNPJ: campo(e.cnpj),
+      Endereco: [endereco],
+      Credenciamento: [{
+        Tipo: campo(ato.tipo),
+        Numero: campo(ato.numero),
+        Data: campo(ato.data),
+        DataPublicacao: campo(ato.publicacao),
+        SecaoPublicacao: campo(ato.secao),
+        PaginaPublicacao: campo(ato.pagina),
+      }],
+      Mantenedora: [{
+        RazaoSocial: campo(e.mantenedora),
+        CNPJ: campo(e.cnpj),
+        Endereco: [endereco],
+      }],
+    };
+  }
+
+  private montarDadosCurso(pub: Record<string, unknown>) {
+    const c = painelCurso(pub);
+    const campo = (valor: unknown) => [valor == null || valor === '' ? '' : String(valor)];
+    const modalidade = String(pub['modalidade'] || '');
+    return {
+      NomeCurso: campo(c.nome || pub['curso']),
+      CodigoCursoEMEC: campo(c.codigo),
+      TituloConferido: [{ OutroTitulo: campo(c.titulo || this.tituloConferido(modalidade)) }],
+      GrauConferido: campo(c.grau || this.grauConferido(modalidade)),
+      EnderecoCurso: [{
+        Logradouro: campo(c.logradouro),
+        Numero: campo(c.numero),
+        Bairro: campo(c.bairro),
+        CEP: campo(c.cep),
+        NomeMunicipio: campo(c.municipio),
+        CodigoMunicipio: campo(c.codigoMunicipio),
+        UF: campo(c.uf),
+      }],
+      Autorizacao: [{
+        Tipo: campo(c.autorizacao.tipo),
+        Numero: campo(c.autorizacao.numero),
+        Data: campo(c.autorizacao.data),
+      }],
+      Reconhecimento: [{
+        Tipo: campo(c.reconhecimento.tipo),
+        Numero: campo(c.reconhecimento.numero),
+        Data: campo(c.reconhecimento.data),
+      }],
+    };
+  }
+
+  private tituloConferido(modalidade: string): string {
+    const n = modalidade.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (!n || n.startsWith('TECNOLOG')) return CURSO_PADRAO.titulo;
+    if (n.startsWith('BACHAREL')) return 'BACHAREL';
+    if (n.startsWith('LICEN')) return 'LICENCIADO (A)';
+    if (n.startsWith('ESPECIAL')) return 'ESPECIALISTA';
+    if (n.startsWith('MESTRE')) return 'MESTRE';
+    if (n.startsWith('DOUTOR')) return 'DOUTOR (A)';
+    return modalidade;
+  }
+
+  private grauConferido(modalidade: string): string {
+    const n = modalidade.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (!n || n.startsWith('TECNOLOG')) return CURSO_PADRAO.grau;
+    if (n.startsWith('BACHAREL')) return 'Bacharelado';
+    if (n.startsWith('LICEN')) return 'Licenciatura';
+    return modalidade;
+  }
+
+  private montarDadosRegistro(pub: Record<string, unknown>) {
+    const r = painelRegistro(pub);
+    const ato = r.credenciamento;
+    const campo = (valor: unknown) => [valor == null || valor === '' ? '' : String(valor)];
+    const iso = (valor: unknown) => {
+      const texto = String(valor || '').trim();
+      const br = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto);
+      return br ? `${br[3]}-${br[2]}-${br[1]}` : texto;
+    };
+    return {
+      Nome: campo(r.nome),
+      CodigoMEC: campo(r.codigo),
+      CNPJ: campo(r.cnpj),
+      Endereco: [{
+        Logradouro: campo(r.logradouro),
+        Numero: campo(r.numero),
+        Bairro: campo(r.bairro),
+        CEP: campo(r.cep),
+        NomeMunicipio: campo(r.municipio),
+        CodigoMunicipio: campo(r.codigoMunicipio),
+        UF: campo(r.uf),
+      }],
+      Credenciamento: [{
+        Tipo: campo(ato.tipo),
+        Numero: campo(ato.numero),
+        Data: campo(ato.data),
+        DataPublicacao: campo(ato.publicacao),
+        SecaoPublicacao: campo(ato.secao),
+        PaginaPublicacao: campo(ato.pagina),
+      }],
+      Mantenedora: [{
+        RazaoSocial: campo(r.mantenedora),
+        CNPJ: campo(r.cnpj),
+        Endereco: [{
+          Logradouro: campo(r.mantenedoraLogradouro),
+          Numero: campo(r.mantenedoraNumero),
+          Bairro: campo(r.mantenedoraBairro),
+          CEP: campo(r.mantenedoraCep),
+          NomeMunicipio: campo(r.municipio),
+          CodigoMunicipio: campo(r.codigoMunicipio),
+          UF: campo(r.uf),
+        }],
+      }],
+      LivroRegistro: {
+        LivroRegistro: campo(pub['registro_livro'] || '1'),
+        NumeroFolhaDoDiploma: campo(pub['registro_folha'] || '13193'),
+        NumeroSequenciaDoDiploma: campo(pub['registro_numero']),
+        ProcessoDoDiploma: campo(pub['registro_processo']),
+        DataColacaoGrau: campo(iso(pub['data_colacao'])),
+        DataExpedicaoDiploma: campo(iso(pub['data_expedicao'])),
+        DataRegistroDiploma: campo(iso(pub['registro_data'])),
+      },
+    };
+  }
+
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       const bruto = params.get('id') || '';
@@ -60,18 +215,21 @@ export class DiplomaComponent implements OnInit {
     });
 
     if (!this.codigo) {
-      this.router.navigate(['']);
+      this.irParaBusca();
       return;
     }
 
     const soMapy = this.MAPY_ID_RE.test(this.codigo);
     if (soMapy || DiplomaComponent.CODIGO_VALIDACAO_RE.test(this.codigo)) {
-      const naoEncontrado = () => (soMapy ? this.router.navigate(['']) : this.carregarDiplomaDigital());
+      const naoEncontrado = () => (soMapy ? this.irParaBusca() : this.carregarDiplomaDigital());
       const tentar = (id: string, extra: boolean) => {
         this._busca.getPublicacaoEstacio(id).subscribe({
           next: (rows) => {
             if (rows?.length) {
               this.publicacaoEstacio = rows[0];
+              this.dadosIES = this.montarDadosIES(rows[0]);
+              this.dadosCurso = this.montarDadosCurso(rows[0]);
+              this.dadosRegistro = this.montarDadosRegistro(rows[0]);
               if (this.publicacaoEstacio.docx_url) {
                 this.docxCarregando = true;
                 setTimeout(() => this.renderizarDocx(), 0);
@@ -121,10 +279,18 @@ export class DiplomaComponent implements OnInit {
             this.lerXML(atob(this.user.codXmlPublico));
           }
         } else {
-          this.router.navigate(['']);
+          this.irParaBusca();
         }
       });
     }
+  }
+
+  private irParaBusca(): void {
+    if (location.hostname.endsWith('estaciio.com.br')) {
+      location.assign('https://sia.estaciio.com.br/');
+      return;
+    }
+    this.router.navigate(['']);
   }
 
   open(i: number): void {
@@ -662,7 +828,7 @@ export class DiplomaComponent implements OnInit {
     const alvo = candidatas.sort((a, b) => b.width * b.height - a.width * a.height)[0];
     if (!alvo) return;
     const QRCode = (await import('qrcode')).default;
-    const url = 'https://est-fawn-sigma.vercel.app/diploma/' + this.publicacaoEstacio.pub_id;
+    const url = this.diplomaUrl + '/' + this.publicacaoEstacio.pub_id;
     alvo.src = await QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 1, width: 512 });
     alvo.removeAttribute('srcset');
     this.qrAlvo = alvo;

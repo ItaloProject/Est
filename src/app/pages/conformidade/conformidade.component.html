@@ -7,7 +7,7 @@
           <div class="sign">Ministério da Educação</div>
         </div>
         <div class="actions">
-          <div class="links">
+          <div class="links" [class.aberto]="menuAberto === 'links'">
             <ul>
               <li class="title">Acesso Rápido</li>
               <li><a target="_blank" rel="noreferrer" href="https://www.gov.br/pt-br/orgaos-do-governo">Órgãos do Governo</a></li>
@@ -15,13 +15,13 @@
               <li><a target="_blank" rel="noreferrer" href="http://www4.planalto.gov.br/legislacao">Legislação</a></li>
               <li><a target="_blank" rel="noreferrer" href="https://www.gov.br/accessibility-info">Acessibilidade</a></li>
             </ul>
-            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Acesso Rápido">
+            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Acesso Rápido" [attr.aria-expanded]="menuAberto === 'links'" (click)="alternarMenu('links', $event)">
               <svg class="svg-inline--fa fa-ellipsis-v fa-w-6" aria-hidden="true" focusable="false" role="img" viewBox="0 0 192 512">
                 <path fill="currentColor" d="M96 184c39.8 0 72 32.2 72 72s-32.2 72-72 72-72-32.2-72-72 32.2-72 72-72zM24 80c0 39.8 32.2 72 72 72s72-32.2 72-72S135.8 8 96 8 24 40.2 24 80zm0 352c0 39.8 32.2 72 72 72s72-32.2 72-72-32.2-72-72-72-72 32.2-72 72z" />
               </svg>
             </button>
           </div>
-          <div class="functions">
+          <div class="functions" [class.aberto]="menuAberto === 'functions'">
             <ul>
               <li class="title">Funcionalidades do Sistema</li>
               <li>
@@ -35,7 +35,7 @@
                 </a>
               </li>
             </ul>
-            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Funcionalidades do Sistema">
+            <button class="br-button circle small d-none" type="button" data-trigger="true" aria-label="Abrir Funcionalidades do Sistema" [attr.aria-expanded]="menuAberto === 'functions'" (click)="alternarMenu('functions', $event)">
               <svg class="svg-inline--fa fa-th fa-w-16" aria-hidden="true" focusable="false" role="img" viewBox="0 0 512 512">
                 <path fill="currentColor" d="M149.333 56v80c0 13.255-10.745 24-24 24H24c-13.255 0-24-10.745-24-24V56c0-13.255 10.745-24 24-24h101.333c13.255 0 24 10.745 24 24zm181.334 240v-80c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.256 0 24.001-10.745 24.001-24zm32-240v80c0 13.255 10.745 24 24 24H488c13.255 0 24-10.745 24-24V56c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24zm-32 80V56c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.256 0 24.001-10.745 24.001-24zm-205.334 56H24c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24zM0 376v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H24c-13.255 0-24 10.745-24 24zm386.667-56H488c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24zm0 160H488c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H386.667c-13.255 0-24 10.745-24 24v80c0 13.255 10.745 24 24 24zM181.333 376v80c0 13.255 10.745 24 24 24h101.333c13.255 0 24-10.745 24-24v-80c0-13.255-10.745-24-24-24H205.333c-13.255 0-24 10.745-24 24z" />
               </svg>
@@ -91,7 +91,8 @@
   <p class="helper-text"></p>
 </div>
 
-<div id="content" class="content-card">
+<div id="content" class="content-card" [class.com-digital]="fase !== 'envio'">
+  <ng-container *ngIf="fase === 'envio'">
   <div class="title-container">
     <div></div>
     <div>
@@ -135,12 +136,7 @@
 
   <div class="upload">
     <input #inputArquivo id="select-file" type="file" accept=".xml,text/xml,application/xml" (change)="selecionarArquivo($event)" />
-    <p *ngIf="nomeArquivo" class="arquivo">
-      {{ nomeArquivo }} ({{ tamanhoArquivo }})
-      <button type="button" class="remover" aria-label="Remover arquivo" (click)="limpar()">
-        <i-bs name="trash"></i-bs>
-      </button>
-    </p>
+    <p *ngIf="erroArquivo" class="erro-arquivo">{{ erroArquivo }}</p>
     <div class="buttons">
       <button class="botao" (click)="inputArquivo.click()">
         <div class="content">
@@ -170,24 +166,84 @@
     </button>
     <p class="version-support">Versões suportadas: schemas XSD 1.05 e demais anteriores.</p>
   </div>
+  </ng-container>
 
-  <div class="resultado" *ngIf="verificacoes.length">
-    <div class="resultado-header">
-      <span>Resultado da verificação</span>
-      <span class="tag" [ngClass]="conforme ? 'sucesso' : 'erro'">{{ conforme ? 'Conforme' : 'Não conforme' }}</span>
-    </div>
-    <div class="item" *ngFor="let v of verificacoes" [ngClass]="v.status">
-      <span class="status-icon">
-        <i-bs *ngIf="v.status === 'sucesso'" name="check-circle-fill"></i-bs>
-        <i-bs *ngIf="v.status === 'erro'" name="x-circle-fill"></i-bs>
-        <i-bs *ngIf="v.status === 'alerta'" name="exclamation-triangle-fill"></i-bs>
-      </span>
-      <div>
-        <p class="item-titulo">{{ v.titulo }}</p>
-        <p class="item-descricao">{{ v.descricao }}</p>
+  <section class="analise" *ngIf="fase === 'analise'" aria-live="polite">
+    <h2>Análise do documento</h2>
+    <p class="aviso">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3.2 1.8 20.8h20.4L12 3.2zm0 6.2c.5 0 .9.4.9.9v4.2c0 .5-.4.9-.9.9s-.9-.4-.9-.9V10.3c0-.5.4-.9.9-.9zm0 8.6a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2z"/></svg>
+      O processo de verificação pode demorar alguns instantes
+    </p>
+    <div class="scanner">
+      <svg class="marca" viewBox="0 0 320 220" aria-hidden="true">
+        <circle cx="160" cy="110" r="100" /><circle cx="160" cy="110" r="78" /><circle cx="160" cy="110" r="56" /><circle cx="160" cy="110" r="34" />
+      </svg>
+      <div class="palco">
+        <div class="cena">
+          <img class="diploma" src="assets/verificador/diploma.png" alt="">
+          <img class="linha" src="assets/verificador/linha.png" alt="">
+        </div>
       </div>
     </div>
-  </div>
+    <p class="verificando">Verificando...</p>
+    <ul class="etapas">
+      <li *ngFor="let etapa of etapasAnalise"><span></span>{{ etapa }}</li>
+    </ul>
+  </section>
+
+  <section class="relatorio" *ngIf="fase === 'relatorio'">
+    <h2>Estrutura do XML do Diploma Digital <span [class.invalida]="!conforme" [class.valida]="conforme">{{ conforme ? 'Válida' : 'Inválida' }}</span></h2>
+    <div class="invalido">
+      <img *ngIf="!conforme" class="selo-doc" src="assets/verificador/invalido.svg" alt="">
+      <img *ngIf="conforme" class="selo-doc" src="assets/verificador/diploma.png" alt="">
+      <span class="mensagem">{{ conforme ? 'A estrutura do documento está correta.' : 'A estrutura do documento está incorreta.' }}</span>
+      <p>O conteúdo do documento não é validado.</p>
+    </div>
+    <div class="titulos">
+      <span class="titulo">Relatório da verificação</span>
+      <span class="descricao">Versão do XSD: 1.05</span>
+      <div class="ver-documento">
+        <button type="button" class="olho" (click)="documentoAberto = !documentoAberto">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5m0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+          <span>Visualizar Documento</span>
+        </button>
+      </div>
+    </div>
+    <pre class="xml" *ngIf="documentoAberto">{{ conteudo }}</pre>
+    <div class="lista">
+      <div class="verificacao" *ngFor="let item of verificacoes; let i = index" [ngClass]="item.status" [class.aberto]="itensAbertos[i]">
+        <button type="button" class="cabecalho" (click)="alternarItem(i)" [attr.aria-expanded]="itensAbertos[i]">
+          <span class="dados">
+            <ng-container *ngTemplateOutlet="icone; context: { $implicit: item.status }"></ng-container>
+            <span>{{ item.titulo }}</span>
+          </span>
+          <svg class="seta" width="20" height="12" viewBox="0 0 20 12" aria-hidden="true"><path fill="currentColor" d="M10.7804 11.5559L19.6805 2.65561C19.8865 2.44976 20 2.17496 20 1.88196C20 1.58895 19.8865 1.31416 19.6805 1.10831L19.0252 0.452863C18.5982 0.0263627 17.9042 0.0263627 17.4779 0.452863L10.0041 7.92662L2.52209 0.44457C2.31608 0.238718 2.04145 0.12506 1.7486 0.12506C1.45543 0.12506 1.1808 0.238718 0.974625 0.44457L0.319508 1.10001C0.113495 1.30603 0 1.58066 0 1.87366C0 2.16667 0.113495 2.44146 0.319507 2.64732L9.22773 11.5559C9.43439 11.7622 9.71033 11.8755 10.0037 11.8749C10.2981 11.8755 10.5739 11.7622 10.7804 11.5559Z"/></svg>
+        </button>
+        <div class="conteudo" *ngIf="itensAbertos[i]">
+          <div class="valor">
+            <ng-container *ngTemplateOutlet="icone; context: { $implicit: item.status }"></ng-container>
+            <span>{{ item.descricao }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ng-template #icone let-status>
+      <svg class="icone" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="7" fill="currentColor"/>
+        <path *ngIf="status === 'erro'" d="M4.7 4.7l4.6 4.6M9.3 4.7L4.7 9.3" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>
+        <path *ngIf="status === 'alerta'" d="M4.3 7h5.4" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>
+        <path *ngIf="status === 'sucesso'" d="M4.2 7.2l1.9 1.9 3.8-4" fill="none" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </ng-template>
+    <div class="acoes">
+      <button type="button" class="contorno" (click)="novaVerificacao()">Nova verificação</button>
+      <button type="button" class="cheio" (click)="salvarRelatorio()">Salvar relatório</button>
+    </div>
+    <p class="avaliar">
+      <span>Avaliar Serviço</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    </p>
+  </section>
 </div>
 
 <div class="copyright-container"></div>
@@ -199,8 +255,8 @@
         <img alt="Imagem" src="assets/govbr/govbr-colorido-b.png" />
       </div>
       <div class="br-list" collapsible="" horizontal="" unique="">
-        <div class="col-2" *ngFor="let grupo of rodape">
-          <div class="item" link="">
+        <div class="col-2" *ngFor="let grupo of rodape; let i = index" [class.aberto]="rodapeAberto[i]">
+          <div class="item" link="" (click)="alternarRodape(i, $event)">
             <a [href]="grupo.url">
               <div class="content text-down-01 text-bold text-uppercase">{{ grupo.titulo }}</div>
             </a>

@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { BuscaService } from '../../services/busca.service';
+import { environment } from '../../../environments/environment';
 import { codigoConsulta } from '../../services/xml-diploma';
 import { DiplomaComponent } from '../diploma/diploma.component';
 
@@ -156,7 +157,7 @@ export class MainComponent implements OnInit {
     const estacio = codigoConsulta(codigoLimpo);
     if (estacio || DiplomaComponent.CODIGO_VALIDACAO_RE.test(codigoLimpo)) {
       this.erroDiploma = false;
-      this.route.navigate(['/diploma/' + (estacio || codigoLimpo)]);
+      window.location.assign(`${environment.diplomaUrl}/${estacio || codigoLimpo}`);
       return;
     }
     this.spinnerFunction();
@@ -169,7 +170,7 @@ export class MainComponent implements OnInit {
           this.isLoading = false;
           if (this.diplomaDigital) {
             sessionStorage.setItem('diplomaDigital', JSON.stringify(this.diplomaDigital));
-            this.route.navigate(['/diploma/' + codigo]);
+            window.location.assign(`${environment.diplomaUrl}/${codigo}`);
           } else {
             this.erroDiploma = true;
           }

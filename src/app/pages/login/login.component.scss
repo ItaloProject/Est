@@ -160,27 +160,47 @@ label.rotulo { display: block; font-size: 12px; color: #6b6b6b; margin-bottom: 4
   to { opacity: 1; }
 }
 @media (max-width: 900px) {
-  .tela { flex-direction: column; }
-  .lado-direito { flex: none; max-width: none; min-height: auto; }
+  .tela { flex-direction: column; min-height: 100vh; }
+
+  /* Banner lateral esquerdo */
   .lado-esquerdo {
     position: relative;
-    min-height: 320px;
-    padding: 28px 16px;
-    overflow: hidden;
-    transition: min-height 0.3s ease, padding 0.3s ease;
+    flex: 0 0 auto;
+    min-height: 260px;
+    padding: 24px 16px 36px;
+    overflow: visible;
+    transition: min-height 0.3s ease, padding 0.3s ease, flex 0s;
   }
-  .lado-esquerdo h2 { font-size: 26px; }
+  .lado-esquerdo h2 { font-size: 24px; }
+  .lado-esquerdo img.banner { width: 90%; }
+
+  /* Estado recolhido — sem altura, sem espaço */
   .lado-esquerdo.recolhido {
-    min-height: 56px;
+    min-height: 0;
     padding: 0;
-    background: #fff;
+    flex: 0 0 0;
   }
   .lado-esquerdo.recolhido .conteudo-banner { display: none; }
+  .lado-esquerdo.recolhido .btn-banner {
+    bottom: auto;
+    top: -1px;
+  }
+
+  /* Formulário ocupa o espaço restante */
+  .lado-direito {
+    flex: 1;
+    max-width: none;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Botão toggle — borda inferior do banner */
   .btn-banner {
     position: absolute;
-    top: 12px;
     right: 12px;
-    z-index: 2;
+    bottom: -18px;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -191,7 +211,10 @@ label.rotulo { display: block; font-size: 12px; color: #6b6b6b; margin-bottom: 4
     border-radius: 4px;
     background: #fff;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+    transition: box-shadow 0.15s, transform 0.12s;
   }
+  .btn-banner:active { transform: scale(0.93); box-shadow: 0 1px 3px rgba(0,0,0,0.10); }
   .btn-banner svg { width: 18px; height: 18px; }
   .btn-banner svg path {
     fill: none;

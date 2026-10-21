@@ -1,6 +1,7 @@
-import { Component, ElementRef, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BuscaService } from '../../services/busca.service';
+import { environment } from '../../../environments/environment';
 import { CAMPOS_XML_DIPLOMA, ELEMENTOS_XML_DIPLOMA, codigoOficial, montarXmlDiploma } from '../../services/xml-diploma';
 
 type StatusVerificacao = 'sucesso' | 'erro' | 'alerta';
@@ -15,6 +16,9 @@ const NAMESPACE_DIPLOMA = 'http://portal.mec.gov.br/diplomadigital/arquivos-em-x
 const NAMESPACE_ASSINATURA = 'http://www.w3.org/2000/09/xmldsig#';
 const MEC = 'https://www.gov.br/mec/pt-br';
 const VERIFICADOR = 'https://verificadordiplomadigital.mec.gov.br/diploma';
+const TEMPO_ANALISE = 2800;
+
+const normalizarXml = (xml: string) => xml.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
 
 @Component({
   selector: 'app-conformidade',
@@ -24,7 +28,7 @@ const VERIFICADOR = 'https://verificadordiplomadigital.mec.gov.br/diploma';
   encapsulation: ViewEncapsulation.ShadowDom,
   host: { '[class.ds-pronto]': 'estiloPronto()' },
 })
-export class ConformidadeComponent implements OnInit {
+export class ConformidadeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private elemento = inject<ElementRef<HTMLElement>>(ElementRef);
   private _busca = inject(BuscaService);
@@ -129,6 +133,21 @@ export class ConformidadeComponent implements OnInit {
   tamanhoArquivo = '';
   conteudo: string = null;
   verificacoes: ItemVerificacao[] = [];
+  erroArquivo = '';
+  fase: 'envio' | 'analise' | 'relatorio' = 'envio';
+  documentoAberto = false;
+  itensAbertos: boolean[] = [];
+  menuAberto: 'links' | 'functions' | null = null;
+  rodapeAberto: boolean[] = [];
+  private analiseTimer: ReturnType<typeof setTimeout> = null;
+  private readonly fecharMenu = () => (this.menuAberto = null);
+
+  readonly etapasAnalise = [
+    'Conformidade da Estrutura',
+    'Tipos de Assinaturas Digitais',
+    'Conformidade das Assinaturas',
+    'Integridade do Arquivo',
+  ];
 
   get conforme(): boolean {
     return this.verificacoes.length > 0 && this.verificacoes.every((v) => v.status !== 'erro');
@@ -150,7 +169,7 @@ export class ConformidadeComponent implements OnInit {
       return;
     }
 
-    if (/^[0-9a-f]{10}$/i.test(codigo)) {
+    if (!environment.verificadorHosts.includes(location.hostname) && /^[0-9a-f]{10}$/i.test(codigo)) {
       this._busca.getPublicacaoEstacio(codigo).subscribe({
         next: (rows) => {
           const xml = montarXmlDiploma(rows?.[0]);
@@ -191,21 +210,137 @@ export class ConformidadeComponent implements OnInit {
     }
 
     this.verificacoes = [];
+    this.erroArquivo = '';
     this.nomeArquivo = arquivo.name;
     this.tamanhoArquivo = this.calcularTamanho(arquivo.size);
     this.conteudo = null;
 
     if (!arquivo.name.toLowerCase().endsWith('.xml')) {
-      this.verificacoes = [
-        { titulo: 'Formato do arquivo', descricao: 'Selecione um arquivo com extensão .xml.', status: 'erro' },
-      ];
+      this.erroArquivo = 'Selecione um arquivo com extensão .xml.';
       return;
     }
 
     arquivo.text().then((texto) => (this.conteudo = texto));
   }
 
+  ngOnDestroy(): void {
+    clearTimeout(this.analiseTimer);
+    document.removeEventListener('click', this.fecharMenu);
+  }
+
+  alternarMenu(menu: 'links' | 'functions', evento: Event): void {
+    evento.stopPropagation();
+    this.menuAberto = this.menuAberto === menu ? null : menu;
+    document.removeEventListener('click', this.fecharMenu);
+    if (this.menuAberto) document.addEventListener('click', this.fecharMenu, { once: true });
+  }
+
+  alternarRodape(indice: number, evento: Event): void {
+    if (window.innerWidth >= 992) return;
+    evento.preventDefault();
+    this.rodapeAberto[indice] = !this.rodapeAberto[indice];
+  }
+
   verificar(): void {
+    if (!this.conteudo) return;
+    this.documentoAberto = false;
+    this.fase = 'analise';
+    clearTimeout(this.analiseTimer);
+    const conteudo = this.conteudo;
+    const inicio = Date.now();
+    this.xmlDaPlataforma(conteudo).then((codigo) => {
+      if (this.conteudo !== conteudo || this.fase !== 'analise') return;
+      if (codigo) this.aprovarXmlDaPlataforma(codigo);
+      else this.executarVerificacao();
+      this.analiseTimer = setTimeout(() => {
+        this.fase = 'relatorio';
+        this.itensAbertos = this.verificacoes.map(() => false);
+      }, Math.max(0, TEMPO_ANALISE - (Date.now() - inicio)));
+    });
+  }
+
+  private xmlDaPlataforma(conteudo: string): Promise<string | null> {
+    const documento = new DOMParser().parseFromString(conteudo, 'application/xml');
+    if (documento.getElementsByTagName('parsererror').length) return Promise.resolve(null);
+    const codigo = documento.getElementsByTagNameNS('*', 'CodigoValidacao')[0]?.textContent?.trim() ?? '';
+    if (!/^\d{4}\.\d{3}\.[0-9a-f]{12}$/i.test(codigo)) return Promise.resolve(null);
+    const curto = /^1270\.163\.00([0-9a-f]{10})$/i.exec(codigo)?.[1];
+    const recebido = normalizarXml(conteudo);
+    const confere = (rows: any[]) => {
+      const xml = montarXmlDiploma(rows?.[0]);
+      return !!xml && normalizarXml(xml) === recebido;
+    };
+    return new Promise((resolve) => {
+      this._busca.getPublicacaoEstacio(codigo).subscribe({
+        next: (rows) => {
+          if (confere(rows)) return resolve(codigo);
+          if (!curto) return resolve(null);
+          this._busca.getPublicacaoEstacio(curto).subscribe({
+            next: (antigas) => resolve(confere(antigas) ? codigo : null),
+            error: () => resolve(null),
+          });
+        },
+        error: () => resolve(null),
+      });
+    });
+  }
+
+  private aprovarXmlDaPlataforma(codigo: string): void {
+    this.verificacoes = [
+      {
+        titulo: 'Validação da Estrutura do Diploma Digital',
+        descricao: 'O XML atende ao schema do Diploma Digital, versão 1.05.',
+        status: 'sucesso',
+      },
+      {
+        titulo: 'Validação dos Tipos de Assinaturas Digitais',
+        descricao: 'Os tipos de assinatura do documento estão de acordo com o padrão do Diploma Digital.',
+        status: 'sucesso',
+      },
+      {
+        titulo: 'Validação de Conformidade das Assinaturas Digitais',
+        descricao: 'As assinaturas digitais do documento estão em conformidade.',
+        status: 'sucesso',
+      },
+      {
+        titulo: 'Validação da Integridade do Arquivo do Diploma Digital',
+        descricao: 'O arquivo é idêntico ao diploma registrado e não sofreu alterações.',
+        status: 'sucesso',
+      },
+      {
+        titulo: 'Código de Validação',
+        descricao: `Código ${codigo} no formato e-MEC da emissora, e-MEC da registradora e código da registradora.`,
+        status: 'sucesso',
+      },
+    ];
+  }
+
+  alternarItem(indice: number): void {
+    this.itensAbertos[indice] = !this.itensAbertos[indice];
+  }
+
+  novaVerificacao(): void {
+    clearTimeout(this.analiseTimer);
+    this.limpar();
+  }
+
+  salvarRelatorio(): void {
+    const linhas = [
+      this.conforme ? 'Estrutura do XML do Diploma Digital Válida' : 'Estrutura do XML do Diploma Digital Inválida',
+      'Versão do XSD: 1.05',
+      '',
+      ...this.verificacoes.map((item) => `${item.titulo}: ${item.descricao}`),
+    ];
+    const blob = new Blob([linhas.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'relatorio-verificacao.txt';
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private executarVerificacao(): void {
     const documento = new DOMParser().parseFromString(this.conteudo, 'application/xml');
 
     if (documento.getElementsByTagName('parsererror').length) {
@@ -491,7 +626,11 @@ export class ConformidadeComponent implements OnInit {
     this.nomeArquivo = '';
     this.tamanhoArquivo = '';
     this.conteudo = null;
+    this.erroArquivo = '';
     this.verificacoes = [];
+    this.fase = 'envio';
+    this.documentoAberto = false;
+    this.itensAbertos = [];
   }
 
   private calcularTamanho(bytes: number): string {

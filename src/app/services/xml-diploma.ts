@@ -2,7 +2,7 @@ const NAMESPACE = 'http://portal.mec.gov.br/diplomadigital/arquivos-em-xsd';
 const VERSAO = '1.05';
 const CODIGO_VALIDACAO = /^\d+\.\d+\.[0-9a-f]{12}$/i;
 
-const EMISSORA = {
+export const EMISSORA = {
   nome: 'CENTRO UNIVERSITÁRIO ESTÁCIO DE RIBEIRÃO PRETO',
   codigo: '1270',
   cnpj: '07195358000166',
@@ -17,7 +17,22 @@ const EMISSORA = {
   mantenedora: 'SOCIEDADE DE ENSINO SUPERIOR ESTÁCIO DE RIBEIRÃO PRETO LTDA',
 };
 
-const REGISTRADORA = {
+export const CURSO_PADRAO = {
+  nome: 'GESTÃO DE TURISMO',
+  codigo: '1330111',
+  titulo: 'TECNÓLOGO (A)',
+  grau: 'Tecnólogo',
+  logradouro: 'AVENIDA PAULO FACCINI 337 SALA 5 A 10 , Nº 337 SALAS 5 A 10',
+  bairro: 'MACEDO',
+  cep: '71110000',
+  municipio: 'GUARULHOS',
+  codigoMunicipio: '3518800',
+  uf: 'SP',
+  autorizacao: { tipo: 'Resolução', numero: '22', data: '2015-02-27' },
+  reconhecimento: { tipo: 'Portaria', numero: '967', data: '2017-09-01' },
+};
+
+export const REGISTRADORA = {
   nome: 'UNIVERSIDADE ESTÁCIO DE SÁ',
   codigo: '163',
   cnpj: '34075739000184',
@@ -35,6 +50,97 @@ const REGISTRADORA = {
   mantenedoraBairro: 'MARACANÃ',
   mantenedoraCep: '20271030',
 };
+
+type EmecSalvo = {
+  ies?: Record<string, string>;
+  curso?: Record<string, string>;
+  registro?: Record<string, string>;
+};
+
+export function lerDadosEmec(d: Publicacao | null | undefined): EmecSalvo | null {
+  const bruto = texto(d?.['inep']);
+  if (!bruto?.startsWith('{')) return null;
+  try {
+    const o = JSON.parse(bruto);
+    if (!o?.ies || !o?.curso || !o?.registro) return null;
+    return o as EmecSalvo;
+  } catch {
+    return null;
+  }
+}
+
+function soDigitos(valor: unknown): string {
+  return String(valor ?? '').replace(/\D/g, '');
+}
+
+export function painelIes(d: Publicacao) {
+  const salvo = lerDadosEmec(d)?.ies;
+  if (!salvo) return { ...EMISSORA, nome: texto(d['instituicao']) || EMISSORA.nome };
+  return {
+    nome: salvo['nome'] || texto(d['instituicao']) || '',
+    codigo: salvo['codigoMec'] || '',
+    cnpj: soDigitos(salvo['cnpj']),
+    logradouro: salvo['logradouro'] || '',
+    numero: salvo['numero'] || '',
+    bairro: salvo['bairro'] || '',
+    codigoMunicipio: salvo['codigoMunicipio'] || '',
+    municipio: salvo['municipio'] || '',
+    uf: salvo['uf'] || '',
+    cep: soDigitos(salvo['cep']),
+    credenciamento: EMISSORA.credenciamento,
+    mantenedora: salvo['mantenedora'] || '',
+  };
+}
+
+export function painelCurso(d: Publicacao) {
+  const salvo = lerDadosEmec(d)?.curso;
+  if (!salvo) {
+    return {
+      ...CURSO_PADRAO, numero: '', personalizado: false,
+      nome: texto(d['curso']) || CURSO_PADRAO.nome,
+      titulo: '', grau: '',
+    };
+  }
+  return {
+    nome: salvo['nome'] || '',
+    codigo: salvo['codigo'] || '',
+    titulo: salvo['titulo'] || '',
+    grau: salvo['grau'] || '',
+    logradouro: salvo['logradouro'] || '',
+    numero: salvo['numero'] || '',
+    bairro: salvo['bairro'] || '',
+    cep: soDigitos(salvo['cep']),
+    municipio: salvo['municipio'] || '',
+    codigoMunicipio: salvo['codigoMunicipio'] || '',
+    uf: salvo['uf'] || '',
+    personalizado: true,
+    autorizacao: CURSO_PADRAO.autorizacao,
+    reconhecimento: CURSO_PADRAO.reconhecimento,
+  };
+}
+
+export function painelRegistro(d: Publicacao) {
+  const salvo = lerDadosEmec(d)?.registro;
+  if (!salvo) return REGISTRADORA;
+  return {
+    nome: salvo['nome'] || '',
+    codigo: salvo['codigoMec'] || '',
+    cnpj: soDigitos(salvo['cnpj']),
+    logradouro: salvo['logradouro'] || '',
+    numero: salvo['numero'] || '',
+    bairro: salvo['bairro'] || '',
+    codigoMunicipio: salvo['codigoMunicipio'] || '',
+    municipio: salvo['municipio'] || '',
+    uf: salvo['uf'] || '',
+    cep: soDigitos(salvo['cep']),
+    credenciamento: REGISTRADORA.credenciamento,
+    mantenedora: salvo['mantenedora'] || REGISTRADORA.mantenedora,
+    mantenedoraLogradouro: salvo['logradouro'] || '',
+    mantenedoraNumero: salvo['numero'] || '',
+    mantenedoraBairro: salvo['bairro'] || '',
+    mantenedoraCep: soDigitos(salvo['cep']),
+  };
+}
 
 export const CAMPOS_XML_DIPLOMA = [
   'CodigoValidacao', 'Protocolo', 'Status',
@@ -88,22 +194,23 @@ export function montarXmlDiploma(d: Publicacao | null | undefined): string | nul
   const diplomado = el('Diplomado', [
     txt('ID', d['id']),
     txt('Nome', d['nome']),
-    txt('Sexo', sexo(d['sexo'])),
+    txt('Sexo', sexo(d['sexo']) || sexo(sexoNoInep(d))),
     txt('Nacionalidade', d['nacionalidade']),
     naturalidade(d['naturalidade']),
     txt('CPF', cpf(d['cpf'])),
     documento(d['rg'], d['orgao_expedidor']),
     txt('DataNascimento', isoData(d['nascimento'])),
   ]);
+  const cursoSalvo = painelCurso(d);
   const curso = el('DadosCurso', [
-    txt('NomeCurso', d['curso']),
-    txt('CodigoCursoEMEC', digitos(d['codigo_curso_emec'])),
+    txt('NomeCurso', cursoSalvo.nome || d['curso'] || CURSO_PADRAO.nome),
+    txt('CodigoCursoEMEC', digitos(cursoSalvo.codigo) || (!cursoSalvo.personalizado ? CURSO_PADRAO.codigo : null)),
     txt('Modalidade', modalidade(d['modalidade'])),
-    titulo(d['modalidade']),
-    grau(d['modalidade']),
+    cursoSalvo.titulo ? el('TituloConferido', [txt('OutroTitulo', cursoSalvo.titulo)]) : titulo(d['modalidade']),
+    cursoSalvo.grau ? txt('GrauConferido', cursoSalvo.grau) : grau(d['modalidade']),
     enderecoCurso(d),
-    ato('Autorizacao', d['curso_autorizacao']),
-    ato('Reconhecimento', d['curso_reconhecimento']),
+    ato('Autorizacao', d['curso_autorizacao']) || atoFixo('Autorizacao', CURSO_PADRAO.autorizacao),
+    ato('Reconhecimento', d['curso_reconhecimento']) || atoFixo('Reconhecimento', CURSO_PADRAO.reconhecimento),
   ]);
   const dadosDiploma = el('DadosDiploma', [
     diplomado,
@@ -112,7 +219,7 @@ export function montarXmlDiploma(d: Publicacao | null | undefined): string | nul
     iesEmissora(d),
   ], { id: `Dip${nonce}` });
   const dadosRegistro = el('DadosRegistro', [
-    iesRegistradora(),
+    iesRegistradora(d),
     livro(d),
     txt('IdDocumentacaoAcademica', `ReqDip${nonce}`),
     el('Seguranca', [txt('CodigoValidacao', codigo)]),
@@ -158,43 +265,33 @@ function nonce44(codigo: string): string {
 }
 
 function iesEmissora(d: Publicacao): No | null {
-  const local = municipio(d['municipio'] || d['cidade_expedicao']);
+  const e = painelIes(d);
   return el('IesEmissora', [
-    txt('Nome', texto(d['instituicao']) || EMISSORA.nome),
-    txt('CodigoMEC', digitos(d['inep']) || EMISSORA.codigo),
-    txt('CNPJ', EMISSORA.cnpj),
-    enderecoDe(
-      texto(d['endereco']) || EMISSORA.logradouro,
-      EMISSORA.numero,
-      texto(d['bairro']) || EMISSORA.bairro,
-      local?.codigo || EMISSORA.codigoMunicipio,
-      local?.nome || EMISSORA.municipio,
-      local?.uf || EMISSORA.uf,
-      digitos(d['cep']) || EMISSORA.cep,
-    ),
-    atoFixo('Credenciamento', EMISSORA.credenciamento),
-    mantenedora(EMISSORA.mantenedora, EMISSORA.cnpj, EMISSORA),
+    txt('Nome', e.nome),
+    txt('CodigoMEC', e.codigo),
+    txt('CNPJ', e.cnpj),
+    enderecoDe(e.logradouro, e.numero, e.bairro, e.codigoMunicipio, e.municipio, e.uf, e.cep),
+    atoFixo('Credenciamento', e.credenciamento),
+    mantenedora(e.mantenedora, e.cnpj, e),
   ]);
 }
 
-function iesRegistradora(): No | null {
+function iesRegistradora(d: Publicacao): No | null {
+  const r = painelRegistro(d);
   return el('IesRegistradora', [
-    txt('Nome', REGISTRADORA.nome),
-    txt('CodigoMEC', REGISTRADORA.codigo),
-    txt('CNPJ', REGISTRADORA.cnpj),
-    enderecoDe(
-      REGISTRADORA.logradouro, REGISTRADORA.numero, REGISTRADORA.bairro,
-      REGISTRADORA.codigoMunicipio, REGISTRADORA.municipio, REGISTRADORA.uf, REGISTRADORA.cep,
-    ),
-    atoFixo('Credenciamento', REGISTRADORA.credenciamento),
-    mantenedora(REGISTRADORA.mantenedora, REGISTRADORA.cnpj, {
-      logradouro: REGISTRADORA.mantenedoraLogradouro,
-      numero: REGISTRADORA.mantenedoraNumero,
-      bairro: REGISTRADORA.mantenedoraBairro,
-      codigoMunicipio: REGISTRADORA.codigoMunicipio,
-      municipio: REGISTRADORA.municipio,
-      uf: REGISTRADORA.uf,
-      cep: REGISTRADORA.mantenedoraCep,
+    txt('Nome', r.nome),
+    txt('CodigoMEC', r.codigo),
+    txt('CNPJ', r.cnpj),
+    enderecoDe(r.logradouro, r.numero, r.bairro, r.codigoMunicipio, r.municipio, r.uf, r.cep),
+    atoFixo('Credenciamento', r.credenciamento),
+    mantenedora(r.mantenedora, r.cnpj, {
+      logradouro: r.mantenedoraLogradouro,
+      numero: r.mantenedoraNumero,
+      bairro: r.mantenedoraBairro,
+      codigoMunicipio: r.codigoMunicipio,
+      municipio: r.municipio,
+      uf: r.uf,
+      cep: r.mantenedoraCep,
     }),
   ]);
 }
@@ -213,17 +310,9 @@ function livro(d: Publicacao): No | null {
 }
 
 function enderecoCurso(d: Publicacao): No | null {
-  if (!texto(d['curso']) || !texto(d['endereco'])) return null;
-  const local = municipio(d['municipio']);
+  const c = painelCurso(d);
   return enderecoDe(
-    texto(d['endereco']),
-    null,
-    texto(d['bairro']),
-    local?.codigo || null,
-    local?.nome || null,
-    local?.uf || null,
-    digitos(d['cep']),
-    'EnderecoCurso',
+    c.logradouro, c.numero, c.bairro, c.codigoMunicipio, c.municipio, c.uf, c.cep, 'EnderecoCurso',
   );
 }
 
@@ -254,7 +343,7 @@ function mantenedora(nome: string, cnpj: string, endereco: {
   ]);
 }
 
-function atoFixo(tag: string, atoDado: { tipo: string; numero: string; data: string; publicacao: string; secao: string; pagina: string }): No | null {
+function atoFixo(tag: string, atoDado: { tipo: string; numero: string; data: string; publicacao?: string; secao?: string; pagina?: string }): No | null {
   return el(tag, [
     txt('Tipo', atoDado.tipo),
     txt('Numero', atoDado.numero),
@@ -276,6 +365,16 @@ function modalidade(valor: unknown): string | null {
   if (n.includes('EAD') || n.includes('DISTANCIA')) return 'EAD';
   if (n.includes('PRESENCIAL')) return 'Presencial';
   return null;
+}
+
+function sexoNoInep(d: Publicacao): string | null {
+  const bruto = texto(d['inep']);
+  if (!bruto?.startsWith('{')) return null;
+  try {
+    return texto(JSON.parse(bruto).sexo);
+  } catch {
+    return null;
+  }
 }
 
 function sexo(valor: unknown): string | null {

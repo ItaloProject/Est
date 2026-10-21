@@ -12,7 +12,7 @@
         <div class="col-md-3 offset-md-1 col-lg-3 second-block">
           <p *ngIf="publicacaoEstacio.naturalidade"><b>Naturalidade: </b> {{ publicacaoEstacio.naturalidade }}</p>
           <p *ngIf="publicacaoEstacio.rg"><b>RG: </b>{{ publicacaoEstacio.rg }}</p>
-          <p *ngIf="publicacaoEstacio.nome_mae"><b>Mãe: </b>{{ publicacaoEstacio.nome_mae }}</p>
+          <p><b>Sexo: </b>{{ sexoEstacio() }}</p>
         </div>
         <div class="col-md-5 col-lg-6 btn-status-container">
           <button [ngClass]="publicacaoEstacio.ativo ? 'ativo' : 'inativo'">
@@ -72,7 +72,7 @@
 
             <div class="diploma-estacio__rodape">
               <p>{{ publicacaoEstacio.instituicao }}</p>
-              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | https://est-fawn-sigma.vercel.app/diploma/{{ publicacaoEstacio.pub_id }}</p>
+              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | {{ diplomaUrl }}/{{ publicacaoEstacio.pub_id }}</p>
             </div>
           </div>
 
@@ -80,7 +80,7 @@
           <div class="diploma-estacio diploma-estacio--verso">
             <div class="diploma-verso__qr-area">
               <qrcode
-                [qrdata]="'https://est-fawn-sigma.vercel.app/diploma/' + publicacaoEstacio.pub_id"
+                [qrdata]="diplomaUrl + '/' + publicacaoEstacio.pub_id"
                 [width]="180"
                 [margin]="0"
                 [errorCorrectionLevel]="'M'"
@@ -100,44 +100,19 @@
                       (click)="baixarPdfEstacio()">{{ gerandoPdf ? 'Gerando PDF…' : 'Baixar RVDD' }}</button>
             </div>
             <div class="col-sm-12">
-              <a class="btn btn-validar" [routerLink]="['/conformidade', publicacaoEstacio.pub_id]" (click)="enviarXmlConformidade()">Portal de conformidade do XML</a>
+              <a class="btn btn-validar" [href]="conformidadeUrl + '/' + publicacaoEstacio.pub_id">Portal de conformidade do XML</a>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(0)" [attr.aria-expanded]="dadosEstacioOpen[0]">Dados da IES Emissora</button>
-              <div [collapse]="!dadosEstacioOpen[0]" [isAnimated]="true">
-                <div class="body">
-                  <ng-container *ngIf="publicacaoEstacio.instituicao"><label>Nome</label><p>{{ publicacaoEstacio.instituicao }}</p></ng-container>
-                  <h5 *ngIf="publicacaoEstacio.endereco || publicacaoEstacio.bairro || publicacaoEstacio.cep || publicacaoEstacio.municipio">Endereço</h5>
-                  <ng-container *ngIf="publicacaoEstacio.endereco"><label>Logradouro</label><p>{{ publicacaoEstacio.endereco }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.bairro"><label>Bairro</label><p>{{ publicacaoEstacio.bairro }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.cep"><label>CEP</label><p>{{ publicacaoEstacio.cep }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.municipio"><label>Município</label><p>{{ publicacaoEstacio.municipio }}</p></ng-container>
-                </div>
-              </div>
+              <dados [collapse]="!dadosEstacioOpen[0]" [isAnimated]="true" [dados]="dadosIES" [tipo]="'dados-ies'" [tipoCurso]="0"></dados>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(1)" [attr.aria-expanded]="dadosEstacioOpen[1]">Dados do Curso</button>
-              <div [collapse]="!dadosEstacioOpen[1]" [isAnimated]="true">
-                <div class="body">
-                  <ng-container *ngIf="publicacaoEstacio.curso"><label>Nome do Curso</label><p>{{ publicacaoEstacio.curso }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.modalidade"><label>Grau Conferido</label><p>{{ publicacaoEstacio.modalidade }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.curso_reconhecimento"><label>Reconhecimento</label><p>{{ publicacaoEstacio.curso_reconhecimento }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.ano_conclusao"><label>Ano de Conclusão</label><p>{{ publicacaoEstacio.ano_conclusao }}</p></ng-container>
-                </div>
-              </div>
+              <dados [collapse]="!dadosEstacioOpen[1]" [isAnimated]="true" [dados]="dadosCurso" [tipo]="'dados-curso'" [tipoCurso]="0"></dados>
             </div>
             <div class="col-sm-12">
               <button class="btn btn-dados" (click)="openEstacio(2)" [attr.aria-expanded]="dadosEstacioOpen[2]">Dados do Registro</button>
-              <div [collapse]="!dadosEstacioOpen[2]" [isAnimated]="true">
-                <div class="body">
-                  <ng-container *ngIf="publicacaoEstacio.protocolo"><label>Protocolo</label><p>{{ publicacaoEstacio.protocolo }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.registro_numero"><label>Número do Registro</label><p>{{ publicacaoEstacio.registro_numero }}<ng-container *ngIf="publicacaoEstacio.registro_livro">, Livro {{ publicacaoEstacio.registro_livro }}</ng-container><ng-container *ngIf="publicacaoEstacio.registro_folha">, fls {{ publicacaoEstacio.registro_folha }}</ng-container></p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.registro_processo"><label>Processo</label><p>{{ publicacaoEstacio.registro_processo }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.registro_data || publicacaoEstacio.data"><label>Data de Registro do Diploma</label><p>{{ publicacaoEstacio.registro_data || publicacaoEstacio.data }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.status"><label>Status</label><p>{{ publicacaoEstacio.status }}</p></ng-container>
-                  <ng-container *ngIf="publicacaoEstacio.observacao"><label>Observação</label><p>{{ publicacaoEstacio.observacao }}</p></ng-container>
-                </div>
-              </div>
+              <dados [collapse]="!dadosEstacioOpen[2]" [isAnimated]="true" [dados]="dadosRegistro" [tipo]="'dados-registro'" [tipoCurso]="0"></dados>
             </div>
           </div>
         </section>
@@ -190,7 +165,7 @@
             </div>
             <ng-container *ngIf="user.diplomaDigitalCancelado === 'N' && !semXML">
               <div class="col-sm-12">
-                <a class="btn btn-validar" [routerLink]="['/conformidade', codigo]">Portal de conformidade do XML</a>
+                <a class="btn btn-validar" [href]="conformidadeUrl + '/' + codigo">Portal de conformidade do XML</a>
               </div>
             </ng-container>
             <div class="col-sm-12">

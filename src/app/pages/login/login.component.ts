@@ -19,7 +19,7 @@ type AcessoOnline = {
 export class LoginComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
 
-  bannerAberto = true;
+  bannerAberto = window.innerWidth <= 900 ? false : true;
   dataFormatada = '';
   matricula = '';
   senha = '';
