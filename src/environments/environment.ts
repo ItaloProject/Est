@@ -2,13 +2,13 @@ export const environment = {
   production: true,
   url: '/api',
   apptoken: 'jpKESs9lnZEhCkS2aInR',
-  buscaUrl: 'https://sia.estaciio.com.br/',
-  diplomaUrl: 'https://consultadiploma.estaciio.com.br/diploma',
-  conformidadeUrl: 'https://est-fawn-sigma.vercel.app/diploma',
-  // Domínios que abrem direto o Portal de conformidade (nesses o portal normal não aparece).
-  // Os anteriores seguem valendo para links já compartilhados.
+  // O domínio estaciio.com.br foi suspenso (DNS não resolve): tudo passa a usar o domínio do Vercel.
+  buscaUrl: 'https://est-fawn-sigma.vercel.app/',
+  diplomaUrl: 'https://est-fawn-sigma.vercel.app/diploma',
+  // No domínio do Vercel o portal normal precisa aparecer, então a conformidade fica em /conformidade/<código>.
+  conformidadeUrl: 'https://est-fawn-sigma.vercel.app/conformidade',
+  // Domínios que abrem SÓ o Portal de conformidade (modo verificador). Os antigos ficam caso voltem a existir.
   verificadorHosts: [
-    'est-fawn-sigma.vercel.app',
     'verificadordiplomadigital.estaciio.com.br',
     'verificadordiplomadigital.e-mec.online',
   ],
