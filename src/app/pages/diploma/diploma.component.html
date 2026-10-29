@@ -72,7 +72,7 @@
 
             <div class="diploma-estacio__rodape">
               <p>{{ publicacaoEstacio.instituicao }}</p>
-              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | {{ diplomaUrl }}/{{ publicacaoEstacio.pub_id }}</p>
+              <p>Código de Validação: {{ publicacaoEstacio.pub_id }} | {{ enderecoDiploma }}</p>
             </div>
           </div>
 
@@ -80,7 +80,7 @@
           <div class="diploma-estacio diploma-estacio--verso">
             <div class="diploma-verso__qr-area">
               <qrcode
-                [qrdata]="diplomaUrl + '/' + publicacaoEstacio.pub_id"
+                [qrdata]="enderecoDiploma"
                 [width]="180"
                 [margin]="0"
                 [errorCorrectionLevel]="'M'"

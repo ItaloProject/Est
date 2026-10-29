@@ -35,6 +35,13 @@ export class DiplomaComponent implements OnInit {
   diplomaUrl = environment.diplomaUrl;
   conformidadeUrl = environment.conformidadeUrl;
   publicacaoEstacio: any = null;
+
+  // Endereço que vai no QR e no rodapé: o link curto do Encurtador (se existir), senão o endereço direto do diploma.
+  get enderecoDiploma(): string {
+    const p = this.publicacaoEstacio;
+    return p?.url_curta || `${this.diplomaUrl}/${p?.pub_id}`;
+  }
+
   dadosEstacioOpen = [false, false, false];
   docxErro = false;
   docxCarregando = false;
@@ -828,7 +835,7 @@ export class DiplomaComponent implements OnInit {
     const alvo = candidatas.sort((a, b) => b.width * b.height - a.width * a.height)[0];
     if (!alvo) return;
     const QRCode = (await import('qrcode')).default;
-    const url = this.diplomaUrl + '/' + this.publicacaoEstacio.pub_id;
+    const url = this.enderecoDiploma;
     alvo.src = await QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 1, width: 512 });
     alvo.removeAttribute('srcset');
     this.qrAlvo = alvo;
